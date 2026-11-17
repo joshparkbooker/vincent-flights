@@ -13,6 +13,16 @@
       "aircraft": "Boeing 737-800",
       "duration_min": 140,
       "trip": "First trip to Noosa"
+    },
+    {
+      "date": "2026-03-18",
+      "flight": "QF921",
+      "from": "MCY",
+      "to": "MEL",
+      "airline": "Qantas",
+      "aircraft": "Boeing 737-800",
+      "duration_min": 140,
+      "trip": "First trip to Noosa"
     }
   ]
 }
