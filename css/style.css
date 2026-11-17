@@ -299,10 +299,35 @@ table.logbook .small { color: var(--text-secondary); font-size: .78rem; display:
 .crew-card .crew-count { font-weight: 800; font-size: .85rem; line-height: 1.3; color: var(--text-secondary); margin-top: .3rem; }
 .crew-card .crew-first { font-size: .75rem; color: var(--text-muted); font-weight: 700; margin-top: var(--gap-tight); }
 .crew-card .crew-note { font-size: .78rem; line-height: 1.35; color: var(--text-secondary); font-weight: 700; margin-top: .6rem; }
-.crew-card .crew-list { font-size: .7rem; color: var(--text-muted); font-weight: 600; margin-top: .6rem; line-height: 1.4; }
 .crew-card .crew-buddy { display: inline-block; font-size: .65rem; font-weight: 900; color: #b07d00; background: #fff4c2; border-radius: 999px; padding: .1rem .5rem; text-transform: uppercase; letter-spacing: .06em; margin-top: .3rem; }
 .crew-card.buddy { border-color: var(--sun); background: linear-gradient(180deg, #fffbe8, var(--surface-1)); animation: shimmer 2.4s ease-in-out infinite; }
 @keyframes shimmer { 0%, 100% { box-shadow: var(--shadow); } 50% { box-shadow: 0 0 0 6px rgba(255, 210, 63, .35), var(--shadow); } }
+/* buddies tab */
+a.crew-card, a.person { text-decoration: none; color: inherit; cursor: pointer; }
+a.crew-card { display: block; transition: transform .15s; }
+a.crew-card:hover { transform: translateY(-3px) rotate(-.6deg); }
+a.person:hover { transform: translateY(-1px); }
+.crew-card .crew-role { font-size: .72rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; margin-top: .25rem; }
+.crew-card .crew-next { font-size: .72rem; font-weight: 800; color: var(--planned); line-height: 1.3; margin-top: .5rem; }
+h3.buddy-group { font-size: 1.15rem; font-weight: 600; margin: calc(var(--gap-section) * .6) 0 var(--gap-head); display: flex; align-items: center; gap: .45rem; }
+h3.buddy-group .em { font-size: 1.25em; line-height: 1; }
+#buddy-groups > h3.buddy-group:first-child { margin-top: 0; }
+h3.buddy-group + .hint { margin: calc(var(--gap-head) * -.5) 0 var(--gap-head); }
+#buddy-next { display: grid; gap: .75rem; }
+#buddy-next .stop { background: var(--surface-1); box-shadow: var(--shadow); }
+#buddy-next .stop .person { background: var(--surface-2); box-shadow: none; }
+/* one buddy's page, shown over the top of the tab */
+.sheet { position: fixed; inset: 0; z-index: 1900; background: rgba(15, 26, 58, .6); overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 2rem 1rem; }
+.sheet[hidden] { display: none; }
+.sheet-card { position: relative; max-width: 900px; margin: 0 auto; background: var(--sky-bottom); border-radius: 28px; padding: 1.6rem; box-shadow: 0 20px 60px rgba(0,0,0,.35); }
+.sheet-close { position: absolute; top: 1rem; right: 1rem; width: 44px; height: 44px; border-radius: 50%; border: 0; background: var(--surface-1); color: var(--ink); font: inherit; font-size: 1.05rem; font-weight: 800; cursor: pointer; box-shadow: var(--shadow-pop); display: grid; place-items: center; z-index: 1; }
+.buddy-head { display: flex; align-items: center; gap: 1rem; padding-right: 3.2rem; margin-bottom: var(--gap-head); }
+.buddy-head .avatar { width: 72px; height: 72px; font-size: 1.6rem; border-width: 5px; flex: 0 0 auto; box-shadow: var(--shadow); }
+.buddy-head h2 { margin: 0; font-size: 1.7rem; }
+.buddy-sub { font-size: .9rem; font-weight: 700; color: var(--text-secondary); margin-top: var(--gap-tight); line-height: 1.35; }
+.buddy-note { font-size: .88rem; font-weight: 700; color: var(--text-secondary); margin-top: .35rem; line-height: 1.35; }
+.sheet .trips { margin-top: var(--gap-card); }
+.sheet .trip .summary b { font-size: 1.3rem; }
 @media (prefers-reduced-motion: reduce) { .crew-card.buddy { animation: none; } }
 @media (prefers-color-scheme: dark) {
   :root:where(:not([data-theme="light"])) .person.buddy { background: linear-gradient(90deg, #4a4120, #4d2a3c); color: var(--text-primary); }
@@ -370,8 +395,8 @@ table.logbook .small { color: var(--text-secondary); font-size: .78rem; display:
   h1 { font-size: 1.25rem; }
   /* bottom tab bar: lift the header's stacking context above main/footer, otherwise they sit on top of the fixed bar and swallow taps */
   header { z-index: 1500; }
-  .tabs { position: fixed; left: .5rem; right: .5rem; bottom: calc(.5rem + env(safe-area-inset-bottom)); z-index: 1500; display: grid; grid-template-columns: repeat(6, 1fr); gap: 0; padding: .3rem; background: color-mix(in srgb, var(--surface-1) 92%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-radius: 22px; box-shadow: 0 6px 24px rgba(34,51,85,.18); }
-  .tabs a { display: flex; flex-direction: column; align-items: center; gap: .1rem; padding: .35rem 0 .3rem; border-radius: 16px; box-shadow: none; font-size: .62rem; font-weight: 800; letter-spacing: 0; border: 0; background: transparent; }
+  .tabs { position: fixed; left: .5rem; right: .5rem; bottom: calc(.5rem + env(safe-area-inset-bottom)); z-index: 1500; display: grid; grid-template-columns: repeat(7, 1fr); gap: 0; padding: .3rem; background: color-mix(in srgb, var(--surface-1) 92%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-radius: 22px; box-shadow: 0 6px 24px rgba(34,51,85,.18); }
+  .tabs a { display: flex; flex-direction: column; align-items: center; gap: .1rem; padding: .35rem 0 .3rem; border-radius: 16px; box-shadow: none; font-size: .58rem; font-weight: 800; letter-spacing: 0; border: 0; background: transparent; }
   .tabs a:hover { transform: none; }
   .tabs .ti { font-size: 1.35rem; margin: 0; line-height: 1; }
   .tabs a.active { background: var(--sun); }
@@ -399,7 +424,13 @@ table.logbook .small { color: var(--text-secondary); font-size: .78rem; display:
   .firsts { grid-template-columns: 1fr; }
   .crew-grid { grid-template-columns: repeat(2, 1fr); }
   .crew-card { padding: .95rem .6rem; }
-  .crew-card .crew-list { display: none; }
+  a.crew-card:hover { transform: none; }
+  .sheet { padding: .6rem .5rem calc(1rem + env(safe-area-inset-bottom)); }
+  .sheet-card { padding: 1.1rem .85rem; border-radius: 24px; }
+  .sheet-close { top: .7rem; right: .7rem; }
+  .buddy-head { gap: .75rem; }
+  .buddy-head .avatar { width: 58px; height: 58px; font-size: 1.3rem; }
+  .buddy-head h2 { font-size: 1.35rem; }
   /* map */
   #map-canvas { height: 62vh; height: 62dvh; }
   .map-toolbar { gap: .5rem; }

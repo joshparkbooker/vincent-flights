@@ -6,6 +6,55 @@
     "country": "Australia",
     "issued": "2026-03-27"
   },
+  "people": {
+    "Mum": {
+      "group": "parents"
+    },
+    "Dad": {
+      "group": "parents"
+    },
+    "Mimi": {
+      "group": "grandparents"
+    },
+    "Papa": {
+      "group": "grandparents"
+    },
+    "Nanni": {
+      "group": "grandparents"
+    },
+    "Great Grandma Gigi": {
+      "group": "great-grandparents"
+    },
+    "Pa": {
+      "group": "great-grandparents"
+    },
+    "Uncle Marc": {
+      "group": "family",
+      "relation": "Uncle"
+    },
+    "Auntie Hannah": {
+      "group": "family",
+      "relation": "Auntie"
+    },
+    "Cousin Gigi": {
+      "group": "family",
+      "relation": "Cousin"
+    },
+    "Auntie Bianca": {
+      "group": "friends"
+    },
+    "Uncle Nick": {
+      "group": "friends"
+    },
+    "Uncle Charles": {
+      "group": "friends"
+    },
+    "Ollie": {
+      "group": "friends",
+      "buddy": true,
+      "note": "Vincent's best mate, born the same year"
+    }
+  },
   "trips": {
     "First trip to Noosa": {
       "emoji": "🏖️",
@@ -314,11 +363,7 @@
             "Dad",
             "Auntie Bianca",
             "Uncle Nick",
-            {
-              "name": "Ollie",
-              "buddy": true,
-              "note": "Vincent's best mate, born the same year"
-            }
+            "Ollie"
           ],
           "photos": [
             {

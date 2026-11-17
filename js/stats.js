@@ -313,7 +313,7 @@ export function computeStats(data, flights, drives = []) {
       hoursInSky: totalMin / 60,
     },
   };
-  stats.badges = computeBadges(stats, flights, drives);
+  stats.badges = computeBadges(stats, flights, drives, data);
   return stats;
 }
 
@@ -329,7 +329,7 @@ function cumulativeBadge(id, name, desc, icon, flights, valueOf, target, unit) {
   return { id, name, desc, icon, earned: !!date, progress: Math.min(run, target), target, unit, date };
 }
 
-export function computeBadges(s, flights, drives = []) {
+export function computeBadges(s, flights, drives = [], data = {}) {
   const fDate = f => f.date;
   const inhabited = CONTINENTS.filter(c => c !== 'Antarctica');
   const firstAtContinentCount = n => {
@@ -381,24 +381,86 @@ export function computeBadges(s, flights, drives = []) {
   })() });
   b.push(cumulativeBadge('road1k', 'Wheels on the bus', 'One thousand kilometres by road', '🛣️', drives, d => d.km, 1000, 'km'));
   b.push(cumulativeBadge('road5k', 'Big lap', 'Five thousand kilometres by road', '🚐', drives, d => d.km, 5000, 'km'));
+  b.push(...crewBadges(data, flights, drives));
   return b;
 }
 
 // --- travel crew -------------------------------------------------------------
-export const normPerson = x => typeof x === 'string' ? { name: x } : x;
-export function computeCrew(trips) {
+// data.people: { "Mimi": { group: 'parents' | 'grandparents' | 'great-grandparents' | 'family' | 'friends', relation?, buddy?, note? } }
+// A person can still be written inline on a trip or stop as { name, … }; inline details win over the registry.
+export const normPerson = (x, people = {}) => { const p = typeof x === 'string' ? { name: x } : x; return { ...(people[p.name] || {}), ...p }; };
+export const CREW_GROUPS = ['parents', 'grandparents', 'great-grandparents', 'family', 'friends'];
+const eachDay = (from, to) => { const out = []; for (let t = +parseDate(from); t <= +parseDate(to); t += DAY) out.push(new Date(t).toISOString().slice(0, 10)); return out; };
+function stopCountry(t, st) {
+  const before = t.flights.filter(f => !f.transit && (!st.from || f.arrDate <= st.from));
+  return st.country || t.flights.find(f => f.toAp.c === st.name)?.toAp.k || before[before.length - 1]?.toAp.k || t.countries[0] || '';
+}
+export function computeCrew(trips, people = {}) {
   const crew = new Map();
-  const note = (person, label, date, km) => {
-    const p = normPerson(person);
-    const e = crew.get(p.name) || { name: p.name, buddy: !!p.buddy, note: p.note || '', adventures: [], first: date, km: 0 };
-    if (p.buddy) e.buddy = true; if (p.note) e.note = p.note;
-    e.adventures.push(label); e.km += km;
-    if (date < e.first) e.first = date;
-    crew.set(p.name, e);
+  const get = x => {
+    const p = normPerson(x, people);
+    let e = crew.get(p.name);
+    if (!e) { e = { ...p, group: CREW_GROUPS.includes(p.group) ? p.group : 'friends', adventures: [], daySet: new Set(), placeSet: new Set(), countrySet: new Set(), km: 0 }; crew.set(p.name, e); }
+    return e;
   };
   for (const t of trips) {
-    for (const x of t.meta.with || []) note(x, { trip: t.name, stop: null }, t.start, t.km);
-    for (const st of t.stops) for (const x of st.with || []) note(x, { trip: t.name, stop: st.name }, st.from || t.start, 0);
+    const nameOf = x => normPerson(x).name;
+    // on the trip's own list, or on every single stop: they were there the whole way
+    const whole = new Map((t.meta.with || []).map(x => [nameOf(x), x]));
+    const stopLists = t.stops.map(st => st.with || []);
+    if (stopLists.length) for (const x of stopLists[0]) if (stopLists.every(l => l.some(y => nameOf(y) === nameOf(x))) && !whole.has(nameOf(x))) whole.set(nameOf(x), x);
+    for (const x of whole.values()) {
+      const e = get(x);
+      e.adventures.push({ trip: t, whole: true, stops: t.stops, from: t.start, to: t.end });
+      eachDay(t.start, t.end).forEach(d => e.daySet.add(d));
+      e.km += t.km + t.roadKm;
+      if (t.stops.length) for (const st of t.stops) { e.placeSet.add(st.name); e.countrySet.add(stopCountry(t, st)); }
+      else { t.places.filter(p => p !== t.origin).forEach(p => e.placeSet.add(p)); t.countries.forEach(c => e.countrySet.add(c)); }
+    }
+    // joined for some of the stops only: the days, places and countries of those stops count, but not the travel in between
+    const partial = new Map();
+    for (const st of t.stops) for (const x of st.with || []) {
+      if (whole.has(nameOf(x))) continue;
+      const e = get(x);
+      if (!partial.has(e.name)) { const a = { trip: t, whole: false, stops: [], from: st.from || t.start, to: st.to || st.from || t.start }; partial.set(e.name, a); e.adventures.push(a); }
+      const a = partial.get(e.name);
+      a.stops.push(st);
+      if (st.from && st.from < a.from) a.from = st.from;
+      if ((st.to || st.from || '') > a.to) a.to = st.to || st.from;
+      if (st.from) eachDay(st.from, st.to || st.from).forEach(d => e.daySet.add(d));
+      e.placeSet.add(st.name); e.countrySet.add(stopCountry(t, st));
+    }
   }
-  return [...crew.values()].sort((a, b) => b.adventures.length - a.adventures.length || a.first.localeCompare(b.first));
+  return [...crew.values()].map(e => {
+    const adv = e.adventures.sort((a, b) => a.from.localeCompare(b.from));
+    return { ...e, adventures: adv, trips: adv.length, days: e.daySet.size, places: [...e.placeSet], countries: [...e.countrySet].filter(Boolean),
+      first: adv[0].from, firstTrip: adv[0].trip.name, last: adv[adv.length - 1].to };
+  }).sort((a, b) => CREW_GROUPS.indexOf(a.group) - CREW_GROUPS.indexOf(b.group) || b.trips - a.trips || b.days - a.days || a.first.localeCompare(b.first));
+}
+
+// stickers earned by who came along. Works from the raw data so the "next adventure" preview can use it too.
+function crewBadges(data, flights, drives) {
+  const people = data.people || {}, events = [];
+  for (const [name, meta] of Object.entries(data.trips || {})) {
+    const start = [...flights, ...drives].filter(l => l.trip === name).map(l => l.date).sort()[0];
+    if (!start) continue;
+    const add = (list, date) => { if (list?.length) events.push({ date, people: list.map(x => normPerson(x, people)) }); };
+    add(meta.with, start);
+    for (const st of meta.stops || []) add(st.with, st.from || start);
+  }
+  events.sort((a, b) => a.date.localeCompare(b.date));
+  const once = (id, name, desc, icon, test) => { const hit = events.find(test); return { id, name, desc, icon, crew: true, earned: !!hit, progress: hit ? 1 : 0, target: 1, date: hit?.date || null }; };
+  const has = (e, group) => e.people.some(p => p.group === group);
+  // buddies in the order they first joined in (Mum and Dad are the home team, not buddies)
+  const joined = [], seen = new Set();
+  for (const e of events) for (const p of e.people) if (p.group !== 'parents' && !seen.has(p.name)) { seen.add(p.name); joined.push({ name: p.name, date: e.date }); }
+  const biggest = events.reduce((n, e) => Math.max(n, e.people.length), 0), full = events.find(e => e.people.length >= 6);
+  return [
+    once('grandparent', 'Grandparent getaway', 'An adventure with a grandparent', '👵', e => has(e, 'grandparents')),
+    once('fourgen', 'Four generations', 'A grandparent and a great-grandparent on the same adventure', '🌳', e => has(e, 'grandparents') && has(e, 'great-grandparents')),
+    once('bestmate', 'Best mates', 'An adventure with his best mate', '👬', e => e.people.some(p => p.buddy)),
+    { id: 'fullhouse', name: 'Full house', desc: 'Six or more people along on one adventure', icon: '🏡', crew: true, earned: !!full, progress: Math.min(biggest, 6), target: 6, date: full?.date || null },
+    { ...thresholdBadge('crew10', 'Popular kid', 'Ten different travel buddies', '🎉', joined, 10, j => j.date), crew: true },
+    { ...thresholdBadge('crew25', 'It takes a village', 'Twenty-five different travel buddies', '🏘️', joined, 25, j => j.date), crew: true },
+  ];
 }

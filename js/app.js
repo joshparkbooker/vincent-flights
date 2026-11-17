@@ -27,7 +27,7 @@ async function main() {
     LEGS = mergeLegs(FLIGHTS, DRIVES);
     STATS = computeStats(data, FLIGHTS, DRIVES);
     TRIPS = groupTrips(FLIGHTS, data.trips || {}, DRIVES);
-    CREW = computeCrew(TRIPS);
+    CREW = computeCrew(TRIPS, data.people);
   } catch (e) {
     $('main').prepend(el(`<div class="error">Could not load flight data: ${esc(e.message)}</div>`));
     console.error(e);
@@ -38,7 +38,7 @@ async function main() {
   try { UPCOMING = computeUpcoming(); } catch (e) { console.error('Upcoming adventure skipped:', e); }
   renderHero();
   renderStats();
-  renderCrew();
+  renderBuddies();
   renderLogbook();
   renderRoadbook();
   renderRoadStats();
@@ -52,11 +52,19 @@ async function main() {
 
 // --- tabs -------------------------------------------------------------------
 function setupTabs() {
+  let current = null;
   const show = () => {
-    const id = (location.hash || '#map').slice(1);
-    document.querySelectorAll('.tab').forEach(s => s.hidden = s.id !== `tab-${id}`);
-    document.querySelectorAll('.tabs a').forEach(a => a.classList.toggle('active', a.dataset.tab === id));
-    if (id === 'map') { buildMap(); setTimeout(() => map.invalidateSize(), 50); }
+    let id = (location.hash || '#map').slice(1), who = null;
+    // '#buddy/<name>' opens that person's page on top of whichever tab is already showing
+    if (id.startsWith('buddy/')) { who = decodeURIComponent(id.slice(6)); id = current || 'buddies'; }
+    if (!document.getElementById(`tab-${id}`)) id = 'map';
+    if (id !== current) {
+      current = id;
+      document.querySelectorAll('.tab').forEach(s => s.hidden = s.id !== `tab-${id}`);
+      document.querySelectorAll('.tabs a').forEach(a => a.classList.toggle('active', a.dataset.tab === id));
+      if (id === 'map') { buildMap(); setTimeout(() => map.invalidateSize(), 50); }
+    }
+    showBuddy(who, `#${id}`);
   };
   addEventListener('hashchange', show);
   show();
@@ -75,7 +83,7 @@ function computeUpcoming() {
     // stops: places visited along the way without a flight or drive of their own, e.g. { name, country, place? }
     const stops = (u.stops || []).map(st => typeof st === 'string' ? { name: st } : st);
     const sim = { ...DATA, flights: [...DATA.flights, ...(car ? [] : planned)], drives: [...(DATA.drives || []), ...(car ? planned : [])],
-      trips: { ...(DATA.trips || {}), [u.name]: { ...(DATA.trips?.[u.name] || {}), stops } } };
+      trips: { ...(DATA.trips || {}), [u.name]: { ...(DATA.trips?.[u.name] || {}), stops, with: u.with } } };
     const F = enrichFlights(sim, AIRPORTS), D = enrichDrives(sim, AIRPORTS), S = computeStats(sim, F, D);
     const legs = car ? D.filter(d => d.idx >= (DATA.drives || []).length) : F.filter(f => f.idx >= DATA.flights.length);
     const had = (list, c) => list.some(x => x.name === c.name && (x.country ?? '') === (c.country ?? ''));
@@ -359,24 +367,134 @@ function renderStats() {
     s.perYear.map(y => `<tr><td>${y.year}</td><td>${y.flights}</td><td>${fmtInt(y.km)}</td><td>${fmt1(y.minutes / 60)}</td></tr>`).join('');
 }
 
-// --- travel crew ------------------------------------------------------------
-function renderCrew() {
-  const el_ = $('#crew-grid'); if (!el_) return;
-  el_.innerHTML = CREW.map(p => {
-    const n = p.adventures.length;
-    return `<div class="crew-card${p.buddy ? ' buddy' : ''}">
-      <i class="avatar" style="background:${avatarColor(p.name)}">${p.buddy ? '✨' : esc(initials(p.name))}</i>
-      <div class="crew-name">${esc(p.name)}</div>
-      ${p.buddy ? `<div class="crew-buddy">Travel buddy</div>` : ''}
-      <div class="crew-count">${n} adventure${n === 1 ? '' : 's'} together</div>
-      <div class="crew-first">since ${fmtDate(p.first)}</div>
-      ${p.note ? `<div class="crew-note">${esc(p.note)}</div>` : ''}
-      <div class="crew-list">${[...new Set(p.adventures.map(a => a.trip))].map(trip => {
-        const stops = p.adventures.filter(a => a.trip === trip && a.stop).map(a => a.stop);
-        return esc(trip) + (stops.length ? ` (${stops.map(esc).join(', ')})` : '');
-      }).join(' · ')}</div>
-    </div>`;
+// --- travel buddies ---------------------------------------------------------
+const GROUPS = {
+  parents: { title: 'Home team', em: '🏠', hint: 'Along for every adventure so far.' },
+  grandparents: { title: 'Grandparents', em: '👵', role: 'Grandparent' },
+  'great-grandparents': { title: 'Great-grandparents', em: '🌳', role: 'Great-grandparent' },
+  family: { title: 'Aunties, uncles and cousins', em: '👨‍👩‍👧', role: 'Family' },
+  friends: { title: 'Friends', em: '🎈', role: 'Family friend', hint: "Mum and Dad's good friends, and Vincent's own mates." },
+};
+const roleOf = p => p.buddy ? 'Best mate' : p.group === 'parents' ? '' : p.relation || GROUPS[p.group].role;
+const plural = (n, one, many = one + 's') => `${fmtInt(n)} ${n === 1 ? one : many}`;
+const nameList = names => names.length < 3 ? names.join(' and ') : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+const avatar = p => `<i class="avatar" style="background:${avatarColor(p.name)}">${p.buddy ? '✨' : esc(initials(p.name))}</i>`;
+const sleepsText = u => u.underway ? 'happening right now' : plural(u.sleeps, 'sleep') + ' to go';
+const comingUp = name => UPCOMING.filter(u => (u.with || []).some(x => normPerson(x).name === name));
+
+function renderBuddies() {
+  const box = $('#buddy-groups'); if (!box) return;
+  const buddies = CREW.filter(p => p.group !== 'parents');
+
+  // awards: Mum and Dad are on everything, so they sit these out
+  const top = (valueOf, least = false) => {
+    if (!buddies.length) return null;
+    const best = buddies.map(valueOf).sort((x, y) => least ? (x < y ? -1 : x > y ? 1 : 0) : (x > y ? -1 : x < y ? 1 : 0))[0];
+    return { value: best, who: buddies.filter(p => valueOf(p) === best) };
+  };
+  const award = (icon, what, t, whenFn) => !t ? '' : `<div class="first"><div class="icon">${icon}</div><div class="what">${what}</div><div class="detail">${esc(nameList(t.who.map(p => p.name)))}</div><div class="when">${whenFn(t)}</div></div>`;
+  const gatherings = TRIPS.flatMap(t => [{ label: t.name, n: (t.meta.with || []).length, date: t.start }, ...t.stops.map(st => ({ label: `${t.name} · ${st.name}`, n: (st.with || []).length, date: st.from || t.start }))])
+    .sort((x, y) => y.n - x.n || x.date.localeCompare(y.date));
+  const big = gatherings[0];
+  const sinceText = t => `${esc(t.who[0].firstTrip)} · ${fmtDate(t.value)}${DATA.birthdate ? ` · ${esc(DATA.name)} was ${formatAge(ageAt(DATA.birthdate, t.value))} old` : ''}`;
+  $('#buddy-awards').innerHTML = [
+    award('🏆', 'Most adventures together', top(p => p.trips), t => plural(t.value, 'adventure')),
+    award('📆', 'Most days together', top(p => p.days), t => `${plural(t.value, 'day')} away together`),
+    award('🌍', 'Most countries together', top(p => p.countries.length), t => esc(t.who[0].countries.join(', '))),
+    award('🥇', 'Very first travel buddies', top(p => p.first, true), sinceText),
+    award('🆕', 'Newest travel buddy', top(p => p.first), sinceText),
+    big && big.n ? `<div class="first"><div class="icon">🎪</div><div class="what">Biggest crew</div><div class="detail">${esc(big.label)}</div><div class="when">${plural(big.n, 'person', 'people')} came along · ${fmtDate(big.date)}</div></div>` : '',
+  ].join('');
+  $('#buddy-awards-wrap').hidden = !buddies.length;
+
+  box.innerHTML = Object.entries(GROUPS).map(([key, g]) => {
+    const people = CREW.filter(p => p.group === key);
+    if (!people.length) return '';
+    return `<h3 class="buddy-group"><span class="em">${g.em}</span>${g.title}</h3>
+      ${g.hint ? `<p class="hint">${g.hint}</p>` : ''}
+      <div class="crew-grid">${people.map(p => {
+        const next = comingUp(p.name)[0];
+        return `<a class="crew-card${p.buddy ? ' buddy' : ''}" href="#buddy/${encodeURIComponent(p.name)}">
+          ${avatar(p)}
+          <div class="crew-name">${esc(p.name)}</div>
+          ${roleOf(p) ? `<div class="crew-role${p.buddy ? ' crew-buddy' : ''}">${esc(roleOf(p))}</div>` : ''}
+          <div class="crew-count">${plural(p.trips, 'adventure')} · ${plural(p.days, 'day')}</div>
+          <div class="crew-first">since ${fmtDate(p.first)}</div>
+          ${next ? `<div class="crew-next">${next.emoji || '🧳'} coming to ${esc(next.name)}</div>` : ''}
+        </a>`;
+      }).join('')}</div>`;
   }).join('') || '<p class="empty">Nobody yet.</p>';
+
+  const crewBadges = STATS.badges.filter(b => b.crew);
+  $('#buddy-badges').innerHTML = crewBadges.map(badgeHtml).join('');
+  $('#buddy-badges-wrap').hidden = !crewBadges.length;
+
+  $('#buddy-next').innerHTML = UPCOMING.map(u => `<section class="stop">
+    <div class="stop-head"><span class="stop-em">${u.emoji || '🧳'}</span><div><h4>${esc(u.name)}</h4><div class="stop-dates">${fmtDate(u.start)}${u.end && u.end !== u.start ? ' – ' + fmtDate(u.end) : ''} · ${sleepsText(u)}</div></div></div>
+    ${crewRow(u.with, 'Coming') || '<p class="notes">Crew still to be decided.</p>'}
+  </section>`).join('');
+  $('#buddy-next-wrap').hidden = !UPCOMING.length;
+}
+
+// one person's page: their numbers, then every adventure they shared, with the photos from it
+function buddyPage(p) {
+  const next = comingUp(p.name)[0];
+  const tiles = [
+    tile('Adventures together', p.trips, '', '', '🎒'),
+    tile('Days away together', p.days, '', '', '📆'),
+    tile('Places together', p.places.length, '', p.places.length <= 4 ? esc(p.places.join(', ')) : '', '📍'),
+    tile('Countries together', p.countries.length, '', esc(p.countries.join(', ')), '🌍'),
+    p.km ? tile('Travelled side by side', fmtInt(p.km), 'km', 'on the trips they did start to finish', '🧭') : '',
+  ].join('');
+  const adventures = [...p.adventures].reverse().map(a => {
+    const t = a.trip, age = DATA.birthdate ? ageAt(DATA.birthdate, a.from) : null;
+    const dates = a.from === a.to ? fmtDateLong(a.from) : `${fmtDate(a.from)} – ${fmtDate(a.to)}`;
+    const days = daysBetween(a.from, a.to) + 1;
+    const where = a.stops.length ? a.stops.map(st => st.name) : t.places.filter(x => x !== t.origin);
+    const others = [...new Set([...(a.whole ? t.meta.with || [] : []), ...a.stops.flatMap(st => st.with || [])].map(x => normPerson(x).name))].filter(n => n !== p.name);
+    const stops = a.stops.filter(st => normPhotos(st.photos).length).map(st => `<section class="stop">
+        <div class="stop-head"><span class="stop-em">${st.emoji || '📍'}</span><div><h4>${esc(st.name)}</h4></div></div>
+        ${photoStrip(st.photos, t.name, t.stops.indexOf(st))}
+      </section>`).join('');
+    return `<article class="trip">
+      <div class="em">${t.meta.emoji || '🎒'}</div>
+      <h3>${esc(t.name)}</h3>
+      <div class="dates">${dates} · ${esc(where.join(' → '))}</div>
+      ${age ? `<div class="age">${esc(DATA.name)} was ${formatAge(age)} old</div>` : ''}
+      <div class="summary"><b>${plural(days, 'day')}</b>together</div>
+      ${crewRow(others, 'Also there')}
+      ${a.whole ? photoStrip(t.meta.photos, t.name, -1) : ''}
+      ${stops ? `<div class="stops">${stops}</div>` : ''}
+    </article>`;
+  }).join('');
+  return `<div class="buddy-head${p.buddy ? ' buddy' : ''}">
+      ${avatar(p)}
+      <div>
+        <h2>${esc(p.name)}</h2>
+        <div class="buddy-sub">${[esc(roleOf(p)), `adventuring with ${esc(DATA.name)} since ${fmtDate(p.first)}`].filter(Boolean).join(' · ')}</div>
+        ${p.note ? `<div class="buddy-note">${esc(p.note)}</div>` : ''}
+        ${next ? `<div class="buddy-note">${next.emoji || '🧳'} Next adventure together: <b>${esc(next.name)}</b>, ${sleepsText(next)}</div>` : ''}
+      </div>
+    </div>
+    <div class="tiles compact">${tiles}</div>
+    <div class="trips">${adventures}</div>`;
+}
+let buddyBack = '#buddies';
+function showBuddy(name, backTo) {
+  let sheet = $('#buddy-sheet');
+  const p = name && CREW.find(x => x.name === name);
+  if (!p) { if (sheet && !sheet.hidden) { sheet.hidden = true; document.body.style.overflow = ''; } return; }
+  if (!sheet) {
+    sheet = el(`<div id="buddy-sheet" class="sheet" hidden><div class="sheet-card"><button class="sheet-close" aria-label="Close">✕</button><div class="sheet-body"></div></div></div>`);
+    document.body.appendChild(sheet);
+    // closing swaps the address back to the tab underneath, so the back button doesn't reopen the page
+    const close = () => { history.replaceState(null, '', buddyBack); showBuddy(null); };
+    sheet.addEventListener('click', e => { if (e.target === sheet || e.target.closest('.sheet-close')) close(); else photoClick(e); });
+    addEventListener('keydown', e => { if (e.key === 'Escape' && !sheet.hidden && ($('#lightbox')?.hidden ?? true)) close(); });
+  }
+  buddyBack = backTo || buddyBack;
+  sheet.querySelector('.sheet-body').innerHTML = buddyPage(p);
+  sheet.hidden = false; sheet.scrollTop = 0; document.body.style.overflow = 'hidden';
 }
 
 // --- logbook ----------------------------------------------------------------
@@ -453,9 +571,13 @@ const AVATAR_COLORS = ['#ffd23f', '#7ed9b2', '#5fb6ff', '#c9a7ff', '#ffb98a', '#
 const avatarColor = name => AVATAR_COLORS[[...name].reduce((h, ch) => h + ch.charCodeAt(0), 0) % AVATAR_COLORS.length];
 const initials = name => name.split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
 function crewRow(list, label = 'With') {
-  const people = (list || []).map(normPerson);
+  const people = (list || []).map(x => normPerson(x, DATA.people));
   if (!people.length) return '';
-  return `<div class="crew"><span class="crew-label">${label}</span>${people.map(p => `<span class="person${p.buddy ? ' buddy' : ''}" title="${esc(p.note || '')}"><i style="background:${avatarColor(p.name)}">${p.buddy ? '✨' : esc(initials(p.name))}</i>${esc(p.name)}${p.buddy ? '<em>travel buddy</em>' : ''}</span>`).join('')}</div>`;
+  // anyone who has already been on an adventure links to their buddy page
+  const chip = (p, inner) => CREW.some(c => c.name === p.name)
+    ? `<a class="person${p.buddy ? ' buddy' : ''}" href="#buddy/${encodeURIComponent(p.name)}" title="${esc(p.note || '')}">${inner}</a>`
+    : `<span class="person${p.buddy ? ' buddy' : ''}" title="${esc(p.note || '')}">${inner}</span>`;
+  return `<div class="crew"><span class="crew-label">${label}</span>${people.map(p => chip(p, `<i style="background:${avatarColor(p.name)}">${p.buddy ? '✨' : esc(initials(p.name))}</i>${esc(p.name)}${p.buddy ? '<em>best mate</em>' : ''}`)).join('')}</div>`;
 }
 const normPhotos = list => (list || []).map(p => typeof p === 'string' ? { src: p, thumb: p } : p);
 function photoStrip(list, tripName, stopIdx) {
@@ -500,14 +622,15 @@ function renderTrips() {
       ${stops ? `<div class="stops">${stops}</div>` : ''}
     </article>`;
   }).join('') || '<p class="empty">No adventures yet. Where to first?</p>';
-  $('#trips-list').onclick = e => {
-    const b = e.target.closest('.photo'); if (!b) return;
-    const t = TRIPS.find(x => x.name === b.dataset.trip);
-    const si = +b.dataset.stop;
-    const list = si >= 0 ? t.stops[si].photos : t.meta.photos;
-    const title = si >= 0 ? `${t.name} · ${t.stops[si].name}` : t.name;
-    openLightbox(normPhotos(list), title, +b.dataset.i);
-  };
+  $('#trips-list').onclick = photoClick;
+}
+function photoClick(e) {
+  const b = e.target.closest('.photo'); if (!b) return;
+  const t = TRIPS.find(x => x.name === b.dataset.trip);
+  const si = +b.dataset.stop;
+  const list = si >= 0 ? t.stops[si].photos : t.meta.photos;
+  const title = si >= 0 ? `${t.name} · ${t.stops[si].name}` : t.name;
+  openLightbox(normPhotos(list), title, +b.dataset.i);
 }
 
 // --- lightbox ---------------------------------------------------------------
@@ -548,20 +671,23 @@ function openLightbox(plist, title, index) {
     cap.innerHTML = `<b>${esc(title)}</b>${p.caption ? ` · ${esc(p.caption)}` : ''}${p.date ? ` <span class="dim">${fmtDate(p.date)}</span>` : ''} <span class="dim">${i + 1} / ${plist.length}</span>`;
     box.querySelector('.lb-prev').hidden = box.querySelector('.lb-next').hidden = plist.length < 2;
   }
-  function close() { box.hidden = true; document.body.style.overflow = ''; }
+  function close() { box.hidden = true; document.body.style.overflow = ($('#buddy-sheet')?.hidden ?? true) ? '' : 'hidden'; }
   show(i); box.hidden = false; document.body.style.overflow = 'hidden';
 }
 
 // --- badges -----------------------------------------------------------------
 function renderBadges() {
   const sorted = [...STATS.badges].sort((a, b) => (b.earned - a.earned) || (a.date || '').localeCompare(b.date || ''));
-  const prog = b => b.unit === 'km' ? `${fmtInt(b.progress)} / ${fmtInt(b.target)} km` : b.unit === 'min' ? `${fmtDur(b.progress)} / ${fmtDur(b.target)}` : `${b.progress} / ${b.target}`;
-  $('#badges-grid').innerHTML = sorted.map(b => `<div class="badge${b.earned ? '' : ' locked'}">
+  $('#badges-grid').innerHTML = sorted.map(badgeHtml).join('');
+}
+function badgeHtml(b) {
+  const prog = b.unit === 'km' ? `${fmtInt(b.progress)} / ${fmtInt(b.target)} km` : b.unit === 'min' ? `${fmtDur(b.progress)} / ${fmtDur(b.target)}` : `${b.progress} / ${b.target}`;
+  return `<div class="badge${b.earned ? '' : ' locked'}">
     <div class="icon">${b.icon}</div>
     <div class="name">${esc(b.name)}</div>
     <div class="desc">${esc(b.desc)}</div>
-    ${b.earned ? `<div class="date">Got it ${fmtDate(b.date)}!</div>` : `<div class="meter"><i style="width:${Math.round(b.progress / b.target * 100)}%"></i></div><div class="progress">${prog(b)}</div>`}
-  </div>`).join('');
+    ${b.earned ? `<div class="date">Got it ${fmtDate(b.date)}!</div>` : `<div class="meter"><i style="width:${Math.round(b.progress / b.target * 100)}%"></i></div><div class="progress">${prog}</div>`}
+  </div>`;
 }
 
 // --- family password gate -----------------------------------------------------

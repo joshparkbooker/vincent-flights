@@ -152,3 +152,19 @@ Then open http://localhost:8000. Modules and `fetch` need a server; opening `ind
 ```
 python3 -I scripts/build_airports.py /path/to/airports.dat data/airports.json
 ```
+
+## Travel buddies
+
+Trips and stops can list who came along with `"with": ["Mum", "Dad", "Mimi"]`. Each name gets a card on the Buddies tab, with a page of the adventures and photos they shared.
+
+The top-level `people` object says who everyone is, which decides the section they appear in and their label:
+
+```json
+"people": {
+  "Mimi": { "group": "grandparents" },
+  "Uncle Marc": { "group": "family", "relation": "Uncle" },
+  "Ollie": { "group": "friends", "buddy": true, "note": "Vincent's best mate, born the same year" }
+}
+```
+
+`group` is one of `parents`, `grandparents`, `great-grandparents`, `family` or `friends`; a name that isn't listed counts as a friend. `parents` are the home team and sit out the buddy awards. Someone listed on the trip itself, or on every one of its stops, was there the whole way and gets the trip's kilometres; someone on only some stops gets those stops' days, places and photos.

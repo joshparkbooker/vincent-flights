@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
-<link rel="stylesheet" href="css/style.css?v=7">
+<link rel="stylesheet" href="css/style.css?v=8">
 <script>
   // family password gate: only a fingerprint of the password lives here, and a phone that has got in once is remembered
   window.VBA_GATE = '884b81a91403d935fd604bcdeea9d6b171cb72ca5eb51b2f87204bb0fec0b12b';
@@ -49,6 +49,7 @@
     <a href="#logbook" data-tab="logbook"><span class="ti">📓</span><span class="tl">Logbook</span></a>
     <a href="#passport" data-tab="passport"><span class="ti">🛂</span><span class="tl">Passport</span></a>
     <a href="#trips" data-tab="trips"><span class="ti">🎒</span><span class="tl">Adventures</span></a>
+    <a href="#buddies" data-tab="buddies"><span class="ti">👫</span><span class="tl">Buddies</span></a>
     <a href="#badges" data-tab="badges"><span class="ti">🏅</span><span class="tl">Stickers</span></a>
   </nav>
 </header>
@@ -78,9 +79,6 @@
       <h2><span class="em">🚗</span>On the road</h2>
       <div id="roadstats" class="tiles compact"></div>
     </div>
-    <h2><span class="em">👨‍👩‍👦</span>Travel crew</h2>
-    <p class="hint">Everyone who has come along on an adventure.</p>
-    <div id="crew-grid" class="crew-grid"></div>
     <h2><span class="em">🎉</span>Big firsts</h2>
     <div id="firsts" class="firsts"></div>
     <div class="two-col">
@@ -109,6 +107,24 @@
     <h2><span class="em">🎒</span>Adventures</h2>
     <div id="next-trips" class="next-list" hidden></div>
     <div id="trips-list" class="trips"></div>
+  </section>
+
+  <section id="tab-buddies" class="tab" hidden>
+    <h2><span class="em">👫</span>Travel buddies</h2>
+    <p class="hint">Everyone who has come along on an adventure. Tap someone to see their adventures with Vincent.</p>
+    <div id="buddy-groups"></div>
+    <div id="buddy-awards-wrap" hidden>
+      <h2><span class="em">🏆</span>Buddy awards</h2>
+      <div id="buddy-awards" class="firsts"></div>
+    </div>
+    <div id="buddy-next-wrap" hidden>
+      <h2><span class="em">🧳</span>Who's coming next</h2>
+      <div id="buddy-next" class="stops"></div>
+    </div>
+    <div id="buddy-badges-wrap" hidden>
+      <h2><span class="em">🏅</span>Buddy stickers</h2>
+      <div id="buddy-badges" class="badges"></div>
+    </div>
   </section>
 
   <section id="tab-badges" class="tab" hidden>
