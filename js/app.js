@@ -273,7 +273,8 @@ function renderTrips() {
   $('#trips-list').innerHTML = [...TRIPS].reverse().map(t => {
     const age = DATA.birthdate ? ageAt(DATA.birthdate, t.start) : null;
     const dates = t.start === t.end ? fmtDateLong(t.start) : `${fmtDate(t.start)} – ${fmtDate(t.end)}`;
-    const photos = (t.meta.photos || []).map(p => `<img src="${esc(p)}" alt="" loading="lazy">`).join('');
+    const plist = (t.meta.photos || []).map(p => typeof p === 'string' ? { src: p, thumb: p } : p);
+    const photos = plist.map((p, i) => `<button class="photo" data-trip="${esc(t.name)}" data-i="${i}" title="${esc(p.caption || '')}"><img src="${esc(p.thumb || p.src)}" alt="${esc(p.caption || '')}" loading="lazy"></button>`).join('');
     const ems = ['🏖️', '🎢', '🏔️', '🦘', '🐠', '🎈', '🚂', '🍦'];
     const em = ems[[...t.name].reduce((h, ch) => h + ch.charCodeAt(0), 0) % ems.length];
     return `<article class="trip">
@@ -284,9 +285,49 @@ function renderTrips() {
       <div class="summary"><b>${fmtInt(t.km)} km</b>${t.flights.length} flight${t.flights.length === 1 ? '' : 's'} · ${fmtDur(t.minutes)}</div>
       ${t.meta.notes ? `<p class="notes">${esc(t.meta.notes)}</p>` : ''}
       <div class="legs">${t.flights.map(f => `<span class="leg"><b>${esc(f.from)}→${esc(f.to)}</b> ${fmtDate(f.date)}${f.flight ? ' · ' + esc(f.flight) : ''}</span>`).join('')}</div>
-      ${photos ? `<div class="photos">${photos}</div>` : ''}
+      ${photos ? `<div class="photos">${photos}<span class="photo-count">📸 ${plist.length} photo${plist.length === 1 ? '' : 's'}</span></div>` : ''}
     </article>`;
   }).join('') || '<p class="empty">No adventures yet. Where to first?</p>';
+  $('#trips-list').onclick = e => {
+    const b = e.target.closest('.photo'); if (!b) return;
+    const t = TRIPS.find(x => x.name === b.dataset.trip);
+    openLightbox(t, +b.dataset.i);
+  };
+}
+
+// --- lightbox ---------------------------------------------------------------
+function openLightbox(trip, index) {
+  const plist = (trip.meta.photos || []).map(p => typeof p === 'string' ? { src: p } : p);
+  let i = index;
+  let box = $('#lightbox');
+  if (!box) {
+    box = el(`<div id="lightbox" class="lightbox" hidden>
+      <button class="lb-close" aria-label="Close">✕</button>
+      <button class="lb-prev" aria-label="Previous">‹</button>
+      <figure><img alt=""><figcaption></figcaption></figure>
+      <button class="lb-next" aria-label="Next">›</button>
+    </div>`);
+    document.body.appendChild(box);
+    box.addEventListener('click', e => { if (e.target === box || e.target.closest('.lb-close')) close(); });
+    box.querySelector('.lb-prev').onclick = () => show(i - 1);
+    box.querySelector('.lb-next').onclick = () => show(i + 1);
+    addEventListener('keydown', e => {
+      if (box.hidden) return;
+      if (e.key === 'Escape') close();
+      if (e.key === 'ArrowLeft') show(i - 1);
+      if (e.key === 'ArrowRight') show(i + 1);
+    });
+  }
+  const img = box.querySelector('img'), cap = box.querySelector('figcaption');
+  function show(n) {
+    i = (n + plist.length) % plist.length;
+    const p = plist[i];
+    img.src = p.src;
+    cap.innerHTML = `<b>${esc(trip.name)}</b>${p.caption ? ` · ${esc(p.caption)}` : ''}${p.date ? ` <span class="dim">${fmtDate(p.date)}</span>` : ''} <span class="dim">${i + 1} / ${plist.length}</span>`;
+    box.querySelector('.lb-prev').hidden = box.querySelector('.lb-next').hidden = plist.length < 2;
+  }
+  function close() { box.hidden = true; document.body.style.overflow = ''; }
+  show(i); box.hidden = false; document.body.style.overflow = 'hidden';
 }
 
 // --- badges -----------------------------------------------------------------

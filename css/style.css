@@ -240,8 +240,25 @@ table.logbook .small { color: var(--text-secondary); font-size: .78rem; display:
 .trip .legs { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .4rem; }
 .trip .leg { font-size: .82rem; padding: .3rem .7rem; border-radius: 999px; background: var(--p1); color: var(--text-secondary); font-weight: 700; }
 .trip .leg b { color: var(--text-primary); font-weight: 900; }
-.trip .photos { grid-column: 1 / -1; display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .5rem; }
-.trip .photos img { height: 140px; border-radius: 12px; object-fit: cover; border: 4px solid var(--surface-1); box-shadow: var(--shadow); }
+.trip .photos { grid-column: 1 / -1; display: flex; gap: .6rem; flex-wrap: wrap; align-items: center; margin-top: .7rem; }
+.trip .photo { padding: 0; border: 0; background: none; cursor: pointer; border-radius: 14px; transition: transform .15s; transform: rotate(var(--tilt, -2deg)); }
+.trip .photo:nth-child(2n) { --tilt: 2deg; } .trip .photo:nth-child(3n) { --tilt: -1deg; }
+.trip .photo:hover { transform: rotate(0) scale(1.06); z-index: 1; }
+.trip .photo img { display: block; height: 130px; width: 130px; border-radius: 14px; object-fit: cover; border: 5px solid #fff; box-shadow: var(--shadow); background: var(--surface-2); }
+.trip .photo-count { font-size: .8rem; color: var(--text-muted); font-weight: 800; margin-left: .3rem; }
+
+/* lightbox */
+.lightbox { position: fixed; inset: 0; z-index: 2000; background: rgba(15, 26, 58, .88); display: flex; align-items: center; justify-content: center; padding: 1rem; }
+.lightbox[hidden] { display: none; }
+.lightbox figure { margin: 0; max-width: min(1100px, 100%); max-height: 100%; display: flex; flex-direction: column; align-items: center; gap: .6rem; }
+.lightbox img { max-width: 100%; max-height: calc(100vh - 7rem); border-radius: 18px; border: 6px solid #fff; box-shadow: 0 20px 60px rgba(0,0,0,.5); background: #fff; }
+.lightbox figcaption { color: #fff; font-weight: 700; text-align: center; font-size: .95rem; }
+.lightbox figcaption .dim { color: rgba(255,255,255,.65); }
+.lightbox button { position: absolute; font: inherit; font-size: 1.6rem; font-weight: 800; width: 48px; height: 48px; border-radius: 50%; border: 0; background: #fff; color: var(--ink, #223355); cursor: pointer; box-shadow: var(--shadow-pop); display: grid; place-items: center; }
+.lightbox .lb-close { top: 1rem; right: 1rem; font-size: 1.1rem; }
+.lightbox .lb-prev { left: 1rem; top: 50%; transform: translateY(-50%); }
+.lightbox .lb-next { right: 1rem; top: 50%; transform: translateY(-50%); }
+.lightbox button[hidden] { display: none; }
 
 /* badges = stickers */
 .badges { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 1.1rem; }

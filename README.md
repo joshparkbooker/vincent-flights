@@ -33,6 +33,24 @@ Top-level fields: `name`, `birthdate` (YYYY-MM-DD, drives all the age stats), `h
 
 Durations: if both times are given, the real duration is computed using each airport's time zone. If only distance is known, it's estimated at roughly 800 km/h plus taxi time and marked "est" in the logbook.
 
+## Adding photos to a trip
+
+Drop the photos (JPEG, PNG or iPhone HEIC) into `inbox/`, then:
+
+```
+python3 scripts/add_photos.py "First trip to Noosa" inbox/
+```
+
+Or name files directly, optionally with a caption that applies to all of them:
+
+```
+python3 scripts/add_photos.py "First trip to Noosa" --caption "Beach day" ~/Pictures/IMG_1234.HEIC
+```
+
+The script resizes each photo to 1600px (plus a 480px thumbnail) into `photos/<trip-slug>/`, reads the capture date from the file, and links it to the trip in `data/flights.json`. Commit `photos/` and `data/flights.json` and they appear on the Adventures tab with a lightbox. `inbox/` is ignored by git so originals never get committed. The trip name must match the `trip` field on the flights.
+
+Photos can also be hand-edited in the JSON as `{"src": "...", "thumb": "...", "caption": "...", "date": "YYYY-MM-DD"}` or a plain URL string.
+
 ## Local preview
 
 ```
