@@ -341,6 +341,58 @@
           "with": [
             "Mum",
             "Dad"
+          ],
+          "photos": [
+            {
+              "src": "photos/around-the-world/chicago/img-4702-cb081f6a.jpg",
+              "thumb": "photos/around-the-world/chicago/img-4702-cb081f6a-thumb.jpg",
+              "date": "2026-09-20"
+            },
+            {
+              "src": "photos/around-the-world/chicago/img-4723-f051d3df.jpg",
+              "thumb": "photos/around-the-world/chicago/img-4723-f051d3df-thumb.jpg",
+              "date": "2026-09-20"
+            },
+            {
+              "src": "photos/around-the-world/chicago/img-4730-e46210c4.jpg",
+              "thumb": "photos/around-the-world/chicago/img-4730-e46210c4-thumb.jpg",
+              "date": "2026-09-20"
+            },
+            {
+              "src": "photos/around-the-world/chicago/img-6812-e2e650cf.jpg",
+              "thumb": "photos/around-the-world/chicago/img-6812-e2e650cf-thumb.jpg",
+              "date": "2026-09-20"
+            },
+            {
+              "src": "photos/around-the-world/chicago/img-6827-18129d16.jpg",
+              "thumb": "photos/around-the-world/chicago/img-6827-18129d16-thumb.jpg",
+              "date": "2026-09-20"
+            },
+            {
+              "src": "photos/around-the-world/chicago/img-6862-b4a7b259.jpg",
+              "thumb": "photos/around-the-world/chicago/img-6862-b4a7b259-thumb.jpg",
+              "date": "2026-09-21"
+            },
+            {
+              "src": "photos/around-the-world/chicago/img-6884-510c0d6f.jpg",
+              "thumb": "photos/around-the-world/chicago/img-6884-510c0d6f-thumb.jpg",
+              "date": "2026-09-21"
+            },
+            {
+              "src": "photos/around-the-world/chicago/img-6888-a02a88b4.jpg",
+              "thumb": "photos/around-the-world/chicago/img-6888-a02a88b4-thumb.jpg",
+              "date": "2026-09-21"
+            },
+            {
+              "src": "photos/around-the-world/chicago/img-6897-b28320ed.jpg",
+              "thumb": "photos/around-the-world/chicago/img-6897-b28320ed-thumb.jpg",
+              "date": "2026-09-22"
+            },
+            {
+              "src": "photos/around-the-world/chicago/img-6906-2421319b.jpg",
+              "thumb": "photos/around-the-world/chicago/img-6906-2421319b-thumb.jpg",
+              "date": "2026-09-22"
+            }
           ]
         },
         {
