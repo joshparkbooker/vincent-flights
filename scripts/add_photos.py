@@ -57,9 +57,9 @@ def main(argv):
         print('No image files given.'); sys.exit(1)
 
     data = json.load(open(DATA, encoding='utf-8'))
-    known = {f.get('trip') for f in data['flights']}
+    known = {f.get('trip') for f in data['flights'] + data.get('drives', [])}
     if trip not in known:
-        print(f'Warning: no flights have trip "{trip}". Known trips: {sorted(k for k in known if k)}')
+        print(f'Warning: no flights or drives have trip "{trip}". Known trips: {sorted(k for k in known if k)}')
     trips = data.setdefault('trips', {})
     entry = trips.setdefault(trip, {})
     if stop:

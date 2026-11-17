@@ -293,6 +293,23 @@
         "Nanni",
         "Great Grandma Gigi",
         "Pa"
+      ],
+      "photos": [
+        {
+          "src": "photos/creswick-weekend/img-4947-e4aa225c.jpg",
+          "thumb": "photos/creswick-weekend/img-4947-e4aa225c-thumb.jpg",
+          "date": "2026-01-31"
+        },
+        {
+          "src": "photos/creswick-weekend/img-9959-0982c5fd.jpg",
+          "thumb": "photos/creswick-weekend/img-9959-0982c5fd-thumb.jpg",
+          "date": "2026-02-01"
+        },
+        {
+          "src": "photos/creswick-weekend/img-9963-7af4888b.jpg",
+          "thumb": "photos/creswick-weekend/img-9963-7af4888b-thumb.jpg",
+          "date": "2026-02-01"
+        }
       ]
     },
     "Easter in Daylesford": {
