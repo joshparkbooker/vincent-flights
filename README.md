@@ -125,6 +125,18 @@ Add trips that haven't happened yet to an `upcoming` array:
 
 The next one shows as a "sleeps to go" card above the map, all of them sit at the top of Adventures, and the route is drawn as a dashed line on the map. The card also lists any new places, countries and stickers the trip would add. A trip drops off by itself the day after it ends; log the real flights or drives then.
 
+## Family password
+
+The site asks for one shared password before it loads anything, and remembers a device once it has got in. Only a SHA-256 fingerprint of the password is in `index.html` (`window.VBA_GATE`). To change it:
+
+```
+printf 'vincent-flights:NEWPASSWORD' | shasum -a 256
+```
+
+and paste the result into `index.html` (lower case, since the check ignores case). Everyone will be asked again.
+
+This keeps casual visitors and search engines out. It is not encryption: the repo is public, so the data file and photos can still be reached by anyone who goes looking for their direct addresses.
+
 ## Local preview
 
 ```

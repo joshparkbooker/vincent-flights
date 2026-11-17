@@ -1,7 +1,8 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="locked">
 <head>
 <meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#cfe9ff" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0f1a3a" media="(prefers-color-scheme: dark)">
@@ -16,9 +17,24 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
-<link rel="stylesheet" href="css/style.css?v=6">
+<link rel="stylesheet" href="css/style.css?v=7">
+<script>
+  // family password gate: only a fingerprint of the password lives here, and a phone that has got in once is remembered
+  window.VBA_GATE = '884b81a91403d935fd604bcdeea9d6b171cb72ca5eb51b2f87204bb0fec0b12b';
+  try { if (localStorage.getItem('vba-gate') === window.VBA_GATE) document.documentElement.classList.remove('locked'); } catch (e) {}
+</script>
 </head>
 <body>
+<form id="gate" class="gate" autocomplete="off">
+  <div class="gate-card">
+    <div class="gate-plane">✈️</div>
+    <h1>Vincent's Big Adventures</h1>
+    <p>Family only. What's the password?</p>
+    <input id="gate-pass" type="password" placeholder="Password" aria-label="Password" autocapitalize="off" autocorrect="off" spellcheck="false" required>
+    <button class="btn primary" type="submit">Let me in</button>
+    <p id="gate-error" class="gate-error" hidden>Not quite. Have another go!</p>
+  </div>
+</form>
 <header class="topbar">
   <div class="brand">
     <span class="brand-icon">✈️</span>

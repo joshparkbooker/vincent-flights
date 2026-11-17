@@ -330,6 +330,19 @@ table.logbook .small { color: var(--text-secondary); font-size: .78rem; display:
 .empty { color: var(--text-secondary); padding: 2rem; text-align: center; font-weight: 700; }
 .error { background: #fde8e8; color: #7a1f1f; padding: 1rem; border-radius: var(--radius); margin: 1rem 0; }
 
+/* family password gate */
+.gate { display: none; }
+.locked .gate { display: grid; place-items: center; min-height: 100vh; min-height: 100dvh; padding: 1.5rem; position: relative; z-index: 1; }
+.locked header, .locked main, .locked footer { display: none; }
+.gate-card { width: min(22rem, 100%); background: var(--surface-1); border-radius: var(--radius); box-shadow: var(--shadow); padding: 2rem 1.5rem 1.75rem; text-align: center; display: grid; gap: 1rem; }
+.gate-plane { font-size: 3.5rem; line-height: 1; transform: rotate(-15deg); animation: bob 3s ease-in-out infinite; }
+.gate-card p { margin: 0; color: var(--text-secondary); font-weight: 700; }
+.gate-card input { font: inherit; font-weight: 800; font-size: 1.05rem; text-align: center; padding: .7rem 1rem; border-radius: 999px; border: 3px solid var(--border); background: var(--surface-2); color: var(--text-primary); width: 100%; }
+.gate-card input:focus { outline: none; border-color: var(--sky); }
+.gate-card .gate-error { color: var(--coral); font-weight: 800; }
+.gate.shake .gate-card { animation: shake .35s; }
+@keyframes shake { 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+
 /* next adventure countdown */
 .next { display: flex; gap: 1rem; align-items: center; background: var(--surface-1); border-radius: var(--radius); box-shadow: var(--shadow); border: 3px dashed var(--planned); padding: 1.1rem 1.25rem; margin: 0; }
 #next-map { margin-bottom: 1.5rem; }

@@ -564,4 +564,28 @@ function renderBadges() {
   </div>`).join('');
 }
 
-main();
+// --- family password gate -----------------------------------------------------
+// Nothing is loaded or drawn until the password matches. It keeps casual visitors out; it is not encryption.
+async function unlock() {
+  const root = document.documentElement;
+  if (!root.classList.contains('locked')) return;
+  const sha = async text => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)))].map(b => b.toString(16).padStart(2, '0')).join('');
+  const form = $('#gate'), input = $('#gate-pass'), err = $('#gate-error');
+  input.focus();
+  await new Promise(done => {
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const hash = await sha('vincent-flights:' + input.value.trim().toLowerCase());
+      if (hash !== window.VBA_GATE) {
+        err.hidden = false; input.value = ''; input.focus();
+        form.classList.remove('shake'); void form.offsetWidth; form.classList.add('shake');
+        return;
+      }
+      try { localStorage.setItem('vba-gate', hash); } catch (e2) { /* private mode: just ask again next time */ }
+      root.classList.remove('locked');
+      done();
+    });
+  });
+}
+
+unlock().then(main);
