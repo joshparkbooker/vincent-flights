@@ -49,6 +49,30 @@ python3 scripts/add_photos.py "First trip to Noosa" --caption "Beach day" ~/Pict
 
 The script resizes each photo to 1600px (plus a 480px thumbnail) into `photos/<trip-slug>/`, reads the capture date from the file, and links it to the trip in `data/flights.json`. Commit `photos/` and `data/flights.json` and they appear on the Adventures tab with a lightbox. `inbox/` is ignored by git so originals never get committed. The trip name must match the `trip` field on the flights.
 
+### Trips with several stops
+
+A trip can list stops, each with its own dates, notes and photos. Flights still carry the trip name; stops are purely descriptive, so a town reached by car or train works too, and each stop counts as a place visited.
+
+```json
+"trips": {
+  "Japan": {
+    "emoji": "🗾",
+    "notes": "Three weeks, two cities, one very tired toddler.",
+    "stops": [
+      { "name": "Tokyo", "from": "2026-09-01", "to": "2026-09-06", "emoji": "🗼", "notes": "...", "photos": [] },
+      { "name": "Kyoto", "from": "2026-09-06", "to": "2026-09-10", "emoji": "⛩️", "photos": [] }
+    ],
+    "photos": []
+  }
+}
+```
+
+Attach photos to a stop with `--stop`:
+
+```
+python3 scripts/add_photos.py "Japan" --stop "Kyoto" inbox/
+```
+
 Photos can also be hand-edited in the JSON as `{"src": "...", "thumb": "...", "caption": "...", "date": "YYYY-MM-DD"}` or a plain URL string.
 
 ## Local preview

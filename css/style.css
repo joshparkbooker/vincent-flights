@@ -257,6 +257,18 @@ table.logbook .small { color: var(--text-secondary); font-size: .78rem; display:
 .lightbox .lb-next { right: 1rem; top: 50%; transform: translateY(-50%); }
 .lightbox button[hidden] { display: none; }
 
+/* stops inside a trip */
+.trip .stops { grid-column: 1 / -1; display: grid; gap: .7rem; margin-top: .9rem; }
+.stop { background: var(--surface-2); border-radius: 18px; padding: .9rem 1rem; border-left: 6px solid var(--mint); }
+.stops .stop:nth-child(4n+2) { border-left-color: var(--sun); } .stops .stop:nth-child(4n+3) { border-left-color: var(--coral); } .stops .stop:nth-child(4n+4) { border-left-color: var(--lilac); }
+.stop-head { display: flex; align-items: center; gap: .6rem; }
+.stop-em { font-size: 1.6rem; line-height: 1; }
+.stop h4 { margin: 0; font-family: "Fredoka", sans-serif; font-weight: 600; font-size: 1.1rem; }
+.stop-dates { font-size: .82rem; color: var(--text-secondary); font-weight: 700; }
+.stop .notes { margin: .4rem 0 0; font-weight: 600; font-size: .92rem; }
+.stop .photos { margin-top: .6rem; }
+.stop .photo img { height: 110px; width: 110px; }
+
 /* badges = stickers */
 .badges { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 1.1rem; }
 .badge { background: var(--surface-1); border-radius: 50% 50% 50% 50% / 45% 45% 55% 55%; aspect-ratio: 1; padding: 1rem .8rem; text-align: center; box-shadow: var(--shadow); border: 5px solid #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; transform: rotate(var(--rot, 0deg)); transition: transform .15s; }

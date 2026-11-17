@@ -91,6 +91,11 @@ export function groupTrips(flights, tripMeta = {}) {
     if (!f.trip) lastAuto = t;
   }
   for (const t of trips) {
+    t.stops = (t.meta.stops || []).map(st => ({ ...st, photos: st.photos || [] }));
+    if (t.stops.length) {
+      const ds = t.stops.flatMap(st => [st.from, st.to]).filter(Boolean).sort();
+      if (ds.length) { if (ds[0] < t.start) t.start = ds[0]; if (ds[ds.length - 1] > t.end) t.end = ds[ds.length - 1]; }
+    }
     t.km = t.flights.reduce((s, f) => s + f.km, 0);
     t.minutes = t.flights.reduce((s, f) => s + f.durationMin, 0);
     t.places = [...new Set(t.flights.map(f => f.toAp.c))];
@@ -137,6 +142,18 @@ export function computeStats(data, flights) {
     cityFirst.set(k, e);
   };
   flights.forEach((f, i) => { if (i === 0) noteCity(f.fromAp, f.date); noteCity(f.toAp, f.arrDate); });
+  // stops inside trips count as places too (a town reached by car or train)
+  for (const [name, meta] of Object.entries(data.trips || {})) {
+    const tripFlights = flights.filter(f => f.trip === name);
+    const tripStart = tripFlights[0]?.date || '9999';
+    for (const st of meta.stops || []) {
+      if (!st.name) continue;
+      const country = st.country || tripFlights.find(f => f.toAp.c === st.name)?.toAp.k || tripFlights[tripFlights.length - 1]?.toAp.k || '';
+      const k = `${st.name}, ${country}`;
+      if ([...cityFirst.keys()].some(key => key.toLowerCase() === k.toLowerCase())) continue;
+      cityFirst.set(k, { name: st.name, country, first: st.from || tripStart, visits: 1, stop: true });
+    }
+  }
   const cities = [...cityFirst.values()].sort((a, b) => a.first.localeCompare(b.first));
 
   const countryFirst = new Map();

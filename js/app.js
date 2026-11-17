@@ -66,7 +66,7 @@ function renderHero() {
       <div class="chips">
         <span class="chip c1">✈️ ${s.flights} flight${s.flights === 1 ? '' : 's'}</span>
         <span class="chip c2">☁️ ${fmtDur(s.totalMin)} in the clouds</span>
-        <span class="chip c3">🏙️ ${s.cities.length} cit${s.cities.length === 1 ? 'y' : 'ies'}</span>
+        <span class="chip c3">🏙️ ${s.cities.length} place${s.cities.length === 1 ? '' : 's'}</span>
         <span class="chip c4">🌍 ${s.countries.length} countr${s.countries.length === 1 ? 'y' : 'ies'}</span>
         <span class="chip c5">🏅 ${s.badges.filter(b => b.earned).length} sticker${s.badges.filter(b => b.earned).length === 1 ? '' : 's'}</span>
       </div>
@@ -182,7 +182,7 @@ function renderStats() {
     tile('Kilometres zoomed', fmtInt(s.totalKm), 'km', '', '📏'),
     tile('Time in the clouds', fmtDur(s.totalMin), '', '', '☁️'),
     tile('Countries explored', s.countries.length, '', '', '🌍'),
-    tile('Cities visited', s.cities.length, '', '', '🏙️'),
+    tile('Places visited', s.cities.length, '', s.cities.some(c => c.stop) ? 'cities and stops along the way' : '', '🏙️'),
     tile('Airports', s.airports.length, '', '', '🛫'),
     tile('Airlines', s.airlines.length, '', '', '🎫'),
     tile('Kinds of plane', s.aircraft.length, '', '', '🛩️'),
@@ -269,35 +269,53 @@ function renderPassport() {
 }
 
 // --- trips ------------------------------------------------------------------
+const normPhotos = list => (list || []).map(p => typeof p === 'string' ? { src: p, thumb: p } : p);
+function photoStrip(list, tripName, stopIdx) {
+  const plist = normPhotos(list);
+  if (!plist.length) return '';
+  return `<div class="photos">${plist.map((p, i) => `<button class="photo" data-trip="${esc(tripName)}" data-stop="${stopIdx}" data-i="${i}" title="${esc(p.caption || '')}"><img src="${esc(p.thumb || p.src)}" alt="${esc(p.caption || '')}" loading="lazy"></button>`).join('')}<span class="photo-count">📸 ${plist.length} photo${plist.length === 1 ? '' : 's'}</span></div>`;
+}
 function renderTrips() {
+  const ems = ['🏖️', '🎢', '🏔️', '🦘', '🐠', '🎈', '🚂', '🍦'];
   $('#trips-list').innerHTML = [...TRIPS].reverse().map(t => {
     const age = DATA.birthdate ? ageAt(DATA.birthdate, t.start) : null;
     const dates = t.start === t.end ? fmtDateLong(t.start) : `${fmtDate(t.start)} – ${fmtDate(t.end)}`;
-    const plist = (t.meta.photos || []).map(p => typeof p === 'string' ? { src: p, thumb: p } : p);
-    const photos = plist.map((p, i) => `<button class="photo" data-trip="${esc(t.name)}" data-i="${i}" title="${esc(p.caption || '')}"><img src="${esc(p.thumb || p.src)}" alt="${esc(p.caption || '')}" loading="lazy"></button>`).join('');
-    const ems = ['🏖️', '🎢', '🏔️', '🦘', '🐠', '🎈', '🚂', '🍦'];
     const em = t.meta.emoji || ems[[...t.name].reduce((h, ch) => h + ch.charCodeAt(0), 0) % ems.length];
+    const placeList = t.stops.length ? t.stops.map(st => st.name) : t.places.filter(p => p !== t.flights[0].fromAp.c);
+    const nPhotos = normPhotos(t.meta.photos).length + t.stops.reduce((n, st) => n + normPhotos(st.photos).length, 0);
+    const stops = t.stops.map((st, si) => {
+      const sd = st.from && st.to ? (st.from === st.to ? fmtDateLong(st.from) : `${fmtDate(st.from)} – ${fmtDate(st.to)}`) : (st.from ? fmtDateLong(st.from) : '');
+      const nights = st.from && st.to ? Math.round((new Date(st.to) - new Date(st.from)) / 86400000) : null;
+      return `<section class="stop">
+        <div class="stop-head"><span class="stop-em">${st.emoji || '📍'}</span><div><h4>${esc(st.name)}</h4><div class="stop-dates">${sd}${nights ? ` · ${nights} night${nights === 1 ? '' : 's'}` : ''}</div></div></div>
+        ${st.notes ? `<p class="notes">${esc(st.notes)}</p>` : ''}
+        ${photoStrip(st.photos, t.name, si)}
+      </section>`;
+    }).join('');
     return `<article class="trip">
       <div class="em">${em}</div>
       <h3>${esc(t.name)}</h3>
-      <div class="dates">${dates} · ${esc(t.places.filter(p => p !== t.flights[0].fromAp.c).join(', ') || t.places.join(', '))}</div>
+      <div class="dates">${dates} · ${esc(placeList.join(' → ') || t.places.join(', '))}</div>
       ${age ? `<div class="age">${DATA.name} was ${formatAge(age)} old</div>` : ''}
-      <div class="summary"><b>${fmtInt(t.km)} km</b>${t.flights.length} flight${t.flights.length === 1 ? '' : 's'} · ${fmtDur(t.minutes)}</div>
+      <div class="summary"><b>${fmtInt(t.km)} km</b>${t.flights.length} flight${t.flights.length === 1 ? '' : 's'} · ${fmtDur(t.minutes)}${nPhotos ? ` · ${nPhotos} photos` : ''}</div>
       ${t.meta.notes ? `<p class="notes">${esc(t.meta.notes)}</p>` : ''}
       <div class="legs">${t.flights.map(f => `<span class="leg"><b>${esc(f.from)}→${esc(f.to)}</b> ${fmtDate(f.date)}${f.flight ? ' · ' + esc(f.flight) : ''}</span>`).join('')}</div>
-      ${photos ? `<div class="photos">${photos}<span class="photo-count">📸 ${plist.length} photo${plist.length === 1 ? '' : 's'}</span></div>` : ''}
+      ${photoStrip(t.meta.photos, t.name, -1)}
+      ${stops ? `<div class="stops">${stops}</div>` : ''}
     </article>`;
   }).join('') || '<p class="empty">No adventures yet. Where to first?</p>';
   $('#trips-list').onclick = e => {
     const b = e.target.closest('.photo'); if (!b) return;
     const t = TRIPS.find(x => x.name === b.dataset.trip);
-    openLightbox(t, +b.dataset.i);
+    const si = +b.dataset.stop;
+    const list = si >= 0 ? t.stops[si].photos : t.meta.photos;
+    const title = si >= 0 ? `${t.name} · ${t.stops[si].name}` : t.name;
+    openLightbox(normPhotos(list), title, +b.dataset.i);
   };
 }
 
 // --- lightbox ---------------------------------------------------------------
-function openLightbox(trip, index) {
-  const plist = (trip.meta.photos || []).map(p => typeof p === 'string' ? { src: p } : p);
+function openLightbox(plist, title, index) {
   let i = index;
   let box = $('#lightbox');
   if (!box) {
@@ -323,7 +341,7 @@ function openLightbox(trip, index) {
     i = (n + plist.length) % plist.length;
     const p = plist[i];
     img.src = p.src;
-    cap.innerHTML = `<b>${esc(trip.name)}</b>${p.caption ? ` · ${esc(p.caption)}` : ''}${p.date ? ` <span class="dim">${fmtDate(p.date)}</span>` : ''} <span class="dim">${i + 1} / ${plist.length}</span>`;
+    cap.innerHTML = `<b>${esc(title)}</b>${p.caption ? ` · ${esc(p.caption)}` : ''}${p.date ? ` <span class="dim">${fmtDate(p.date)}</span>` : ''} <span class="dim">${i + 1} / ${plist.length}</span>`;
     box.querySelector('.lb-prev').hidden = box.querySelector('.lb-next').hidden = plist.length < 2;
   }
   function close() { box.hidden = true; document.body.style.overflow = ''; }

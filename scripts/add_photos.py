@@ -5,6 +5,7 @@ Usage:
   python3 scripts/add_photos.py "First trip to Noosa" photo1.jpg photo2.heic ...
   python3 scripts/add_photos.py "First trip to Noosa" --caption "Beach day" photo1.jpg
   python3 scripts/add_photos.py "First trip to Noosa" inbox/        # every image in a folder
+  python3 scripts/add_photos.py "Japan" --stop "Kyoto" inbox/       # attach to a stop inside the trip
 
 Each photo is resized (max 1600px, JPEG) into photos/<trip-slug>/ with a 480px
 thumbnail, and appended to trips["<name>"].photos in data/flights.json.
@@ -38,12 +39,15 @@ def main(argv):
         print(__doc__); sys.exit(1)
     trip = argv[0]
     caption = None
+    stop = None
     files = []
     args = argv[1:]
     while args:
         a = args.pop(0)
         if a == '--caption':
             caption = args.pop(0)
+        elif a == '--stop':
+            stop = args.pop(0)
         elif os.path.isdir(a):
             files += sorted(os.path.join(a, f) for f in os.listdir(a)
                             if os.path.splitext(f)[1].lower() in IMG_EXT)
@@ -58,10 +62,19 @@ def main(argv):
         print(f'Warning: no flights have trip "{trip}". Known trips: {sorted(k for k in known if k)}')
     trips = data.setdefault('trips', {})
     entry = trips.setdefault(trip, {})
-    photos = entry.setdefault('photos', [])
+    if stop:
+        stops = entry.setdefault('stops', [])
+        st = next((x for x in stops if x.get('name', '').lower() == stop.lower()), None)
+        if st is None:
+            st = {'name': stop}; stops.append(st)
+            print(f'Created stop "{stop}" in "{trip}" (add from/to dates, emoji, notes in flights.json).')
+        photos = st.setdefault('photos', [])
+        folder = os.path.join(ROOT, 'photos', slug(trip), slug(stop))
+    else:
+        photos = entry.setdefault('photos', [])
+        folder = os.path.join(ROOT, 'photos', slug(trip))
     existing = {p['src'] if isinstance(p, dict) else p for p in photos}
 
-    folder = os.path.join(ROOT, 'photos', slug(trip))
     os.makedirs(folder, exist_ok=True)
     added = 0
     for src in files:
@@ -86,7 +99,7 @@ def main(argv):
 
     with open(DATA, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=2, ensure_ascii=False); f.write('\n')
-    print(f'{added} photo(s) added to "{trip}". Now commit photos/ and data/flights.json.')
+    print(f'{added} photo(s) added to "{trip}"{" · " + stop if stop else ""}. Now commit photos/ and data/flights.json.')
 
 if __name__ == '__main__':
     main(sys.argv[1:])
