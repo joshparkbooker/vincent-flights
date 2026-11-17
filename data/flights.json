@@ -405,6 +405,43 @@
             "Dad",
             "Mimi",
             "Papa"
+          ],
+          "photos": [
+            {
+              "src": "photos/around-the-world/new-york/img-4883-c794ad66.jpg",
+              "thumb": "photos/around-the-world/new-york/img-4883-c794ad66-thumb.jpg",
+              "date": "2026-09-24"
+            },
+            {
+              "src": "photos/around-the-world/new-york/img-6918-429cb73f.jpg",
+              "thumb": "photos/around-the-world/new-york/img-6918-429cb73f-thumb.jpg",
+              "date": "2026-09-24"
+            },
+            {
+              "src": "photos/around-the-world/new-york/img-6921-bf929742.jpg",
+              "thumb": "photos/around-the-world/new-york/img-6921-bf929742-thumb.jpg",
+              "date": "2026-09-24"
+            },
+            {
+              "src": "photos/around-the-world/new-york/img-6937-7629e555.jpg",
+              "thumb": "photos/around-the-world/new-york/img-6937-7629e555-thumb.jpg",
+              "date": "2026-09-24"
+            },
+            {
+              "src": "photos/around-the-world/new-york/img-6943-7d860fb9.jpg",
+              "thumb": "photos/around-the-world/new-york/img-6943-7d860fb9-thumb.jpg",
+              "date": "2026-09-24"
+            },
+            {
+              "src": "photos/around-the-world/new-york/img-6165-6e91ee94.jpg",
+              "thumb": "photos/around-the-world/new-york/img-6165-6e91ee94-thumb.jpg",
+              "date": "2026-09-25"
+            },
+            {
+              "src": "photos/around-the-world/new-york/img-6966-b7dd8cfa.jpg",
+              "thumb": "photos/around-the-world/new-york/img-6966-b7dd8cfa-thumb.jpg",
+              "date": "2026-09-28"
+            }
           ]
         }
       ]
