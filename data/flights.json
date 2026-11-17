@@ -2,7 +2,62 @@
   "name": "Vincent",
   "birthdate": "2025-10-31",
   "home": "MEL",
-  "trips": {},
+  "trips": {
+    "First trip to Noosa": {
+      "photos": [
+        {
+          "src": "photos/first-trip-to-noosa/img-0808-934b2f75.jpg",
+          "thumb": "photos/first-trip-to-noosa/img-0808-934b2f75-thumb.jpg",
+          "date": "2026-03-14"
+        },
+        {
+          "src": "photos/first-trip-to-noosa/img-0883-6f7229ba.jpg",
+          "thumb": "photos/first-trip-to-noosa/img-0883-6f7229ba-thumb.jpg",
+          "date": "2026-03-14"
+        },
+        {
+          "src": "photos/first-trip-to-noosa/img-5254-d6bcc8ad.jpg",
+          "thumb": "photos/first-trip-to-noosa/img-5254-d6bcc8ad-thumb.jpg",
+          "date": "2026-03-14"
+        },
+        {
+          "src": "photos/first-trip-to-noosa/img-0873-2bee0be6.jpg",
+          "thumb": "photos/first-trip-to-noosa/img-0873-2bee0be6-thumb.jpg",
+          "date": "2026-03-15"
+        },
+        {
+          "src": "photos/first-trip-to-noosa/img-5267-20f5e2ce.jpg",
+          "thumb": "photos/first-trip-to-noosa/img-5267-20f5e2ce-thumb.jpg",
+          "date": "2026-03-15"
+        },
+        {
+          "src": "photos/first-trip-to-noosa/img-5269-bb58699c.jpg",
+          "thumb": "photos/first-trip-to-noosa/img-5269-bb58699c-thumb.jpg",
+          "date": "2026-03-15"
+        },
+        {
+          "src": "photos/first-trip-to-noosa/img-5271-7592e414.jpg",
+          "thumb": "photos/first-trip-to-noosa/img-5271-7592e414-thumb.jpg",
+          "date": "2026-03-15"
+        },
+        {
+          "src": "photos/first-trip-to-noosa/img-0931-791b9ed7.jpg",
+          "thumb": "photos/first-trip-to-noosa/img-0931-791b9ed7-thumb.jpg",
+          "date": "2026-03-17"
+        },
+        {
+          "src": "photos/first-trip-to-noosa/img-5299-c71e37ab.jpg",
+          "thumb": "photos/first-trip-to-noosa/img-5299-c71e37ab-thumb.jpg",
+          "date": "2026-03-17"
+        },
+        {
+          "src": "photos/first-trip-to-noosa/img-5313-8df2d83b.jpg",
+          "thumb": "photos/first-trip-to-noosa/img-5313-8df2d83b-thumb.jpg",
+          "date": "2026-03-17"
+        }
+      ]
+    }
+  },
   "flights": [
     {
       "date": "2026-03-13",
