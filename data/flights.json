@@ -57,6 +57,9 @@
           "date": "2026-03-17"
         }
       ]
+    },
+    "Bali trip": {
+      "emoji": "🌴"
     }
   },
   "flights": [
@@ -80,6 +83,30 @@
       "aircraft": "Boeing 737-800",
       "duration_min": 140,
       "trip": "First trip to Noosa"
+    },
+    {
+      "date": "2026-05-11",
+      "flight": "OD178",
+      "from": "MEL",
+      "to": "DPS",
+      "airline": "Batik Air Malaysia",
+      "aircraft": "Boeing 737 MAX 8",
+      "dep_time": "07:00",
+      "arr_time": "11:25",
+      "trip": "Bali trip",
+      "notes": "Scheduled times"
+    },
+    {
+      "date": "2026-05-28",
+      "flight": "JQ32",
+      "from": "DPS",
+      "to": "MEL",
+      "airline": "Jetstar",
+      "aircraft": "Airbus A321neo",
+      "dep_time": "12:05",
+      "arr_time": "19:40",
+      "trip": "Bali trip",
+      "notes": "Scheduled times"
     }
   ]
 }
