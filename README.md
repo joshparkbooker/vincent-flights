@@ -103,6 +103,27 @@ Drives live in a `drives` array next to `flights`, and the towns they touch live
 
 Drives show as dotted lines on the map (and in the replay), get their own logbook table, an "On the road" block on the Numbers tab and a few stickers. Where a drive ends counts as a place visited. Flight totals stay flight-only.
 
+## Next adventure countdown
+
+Add trips that haven't happened yet to an `upcoming` array:
+
+```json
+"upcoming": [
+  {
+    "name": "Fiji holiday",
+    "emoji": "🏝️",                 // optional
+    "start": "2026-12-05",
+    "end": "2026-12-14",            // optional
+    "route": ["MEL", "NAN", "MEL"], // airport codes, or names from "places" for a drive
+    "by": "plane",                  // or "car"
+    "with": ["Mum", "Dad"],         // optional
+    "notes": "Pool, sand, repeat."  // optional
+  }
+]
+```
+
+The next one shows as a "sleeps to go" card above the map, all of them sit at the top of Adventures, and the route is drawn as a dashed line on the map. The card also lists any new places, countries and stickers the trip would add. A trip drops off by itself the day after it ends; log the real flights or drives then.
+
 ## Local preview
 
 ```

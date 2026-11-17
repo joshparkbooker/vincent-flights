@@ -10,7 +10,7 @@ const fmtDur = m => { const h = Math.floor(m / 60), mm = m % 60; return h ? `${h
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const el = (html) => { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstElementChild; };
 
-let DATA, FLIGHTS, DRIVES, LEGS, STATS, TRIPS, CREW, WORLD, AIRPORTS, map, mapBuilt = false;
+let DATA, FLIGHTS, DRIVES, LEGS, STATS, TRIPS, CREW, UPCOMING = [], WORLD, AIRPORTS, map, mapBuilt = false;
 const airportsLon = code => AIRPORTS?.[code]?.lon;
 
 async function main() {
@@ -35,6 +35,7 @@ async function main() {
   }
   document.title = `${DATA.name}'s Big Adventures`;
   $('#title').textContent = `${DATA.name}'s Big Adventures`;
+  try { UPCOMING = computeUpcoming(); } catch (e) { console.error('Upcoming adventure skipped:', e); }
   renderHero();
   renderStats();
   renderCrew();
@@ -44,6 +45,7 @@ async function main() {
   renderPassport();
   renderTrips();
   renderBadges();
+  renderUpcoming();
   $('#datanote').textContent = `${FLIGHTS.length} flights${DRIVES.length ? ` and ${DRIVES.length} drive${DRIVES.length === 1 ? '' : 's'}` : ''} on record · last updated ${LEGS.length ? fmtDate(LEGS[LEGS.length - 1].date) : '—'}`;
   setupTabs();
 }
@@ -58,6 +60,62 @@ function setupTabs() {
   };
   addEventListener('hashchange', show);
   show();
+}
+
+// --- next adventure -----------------------------------------------------------
+// data.upcoming: [{ name, start, end?, route: [place or airport code, …], by: 'plane' | 'car', emoji?, with?, notes? }]
+const localToday = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+const daysBetween = (a, b) => Math.round((new Date(b + 'T00:00:00Z') - new Date(a + 'T00:00:00Z')) / 86400000);
+function computeUpcoming() {
+  const today = localToday();
+  return (DATA.upcoming || []).filter(u => u.start && (u.end || u.start) >= today).sort((a, b) => a.start.localeCompare(b.start)).map(u => {
+    const route = u.route || [], car = u.by === 'car';
+    const planned = route.slice(1).map((to, i) => ({ from: route[i], to, trip: u.name, date: i > 0 && i === route.length - 2 && u.end ? u.end : u.start }));
+    // pretend the trip has happened and see what changes: new places, countries and stickers
+    const sim = { ...DATA, flights: [...DATA.flights, ...(car ? [] : planned)], drives: [...(DATA.drives || []), ...(car ? planned : [])] };
+    const F = enrichFlights(sim, AIRPORTS), D = enrichDrives(sim, AIRPORTS), S = computeStats(sim, F, D);
+    const legs = car ? D.filter(d => d.idx >= (DATA.drives || []).length) : F.filter(f => f.idx >= DATA.flights.length);
+    const had = (list, c) => list.some(x => x.name === c.name && (x.country ?? '') === (c.country ?? ''));
+    const nameOf = (l, end) => car ? l[end + 'Pl'].name : l[end + 'Ap'].c;
+    const stopsAt = legs.length ? [nameOf(legs[0], 'from'), ...legs.map(l => nameOf(l, 'to'))] : [];
+    return {
+      ...u, car, legs, today,
+      sleeps: daysBetween(today, u.start),
+      underway: u.start <= today,
+      day: daysBetween(u.start, today) + 1, days: daysBetween(u.start, u.end || u.start) + 1,
+      km: legs.reduce((n, l) => n + l.km, 0),
+      routeNames: stopsAt.filter((n, i) => i === 0 || n !== stopsAt[i - 1]),
+      newPlaces: S.cities.filter(c => !had(STATS.cities, c)),
+      newCountries: S.countries.filter(c => !STATS.countries.some(x => x.name === c.name)),
+      newBadges: S.badges.filter(b => b.earned && !STATS.badges.find(x => x.id === b.id)?.earned),
+    };
+  });
+}
+function upcomingCard(u, first) {
+  const dates = !u.end || u.end === u.start ? fmtDateLong(u.start) : `${fmtDate(u.start)} – ${fmtDate(u.end)}`;
+  const count = u.underway
+    ? `<div class="next-count now"><b>🎉</b><span>${u.days > 1 ? `day ${u.day} of ${u.days}` : 'today!'}</span></div>`
+    : `<div class="next-count"><b>${u.sleeps}</b><span>sleep${u.sleeps === 1 ? '' : 's'} to go</span></div>`;
+  const extras = [
+    ...u.newCountries.map(c => `🌍 new country: ${esc(c.name)}`),
+    ...(u.newPlaces.length ? [`📍 ${u.newPlaces.length} new place${u.newPlaces.length === 1 ? '' : 's'}: ${u.newPlaces.map(c => esc(c.name)).join(', ')}`] : []),
+    ...u.newBadges.map(b => `${b.icon} new sticker: ${esc(b.name)}`),
+  ];
+  return `<article class="next">
+    ${count}
+    <div class="next-body">
+      <div class="next-kicker">${u.underway ? 'Happening right now' : first ? 'Next adventure' : 'After that'}</div>
+      <h3>${u.emoji ? u.emoji + ' ' : ''}${esc(u.name)}</h3>
+      <div class="next-sub">${dates}${u.routeNames.length ? ` · ${u.car ? '🚗' : '✈️'} ${u.routeNames.map(esc).join(' → ')}` : ''}${u.km ? ` · about ${fmtInt(u.km)} km` : ''}</div>
+      ${u.notes ? `<p class="notes">${esc(u.notes)}</p>` : ''}
+      ${extras.length ? `<div class="next-unlocks">${extras.map(x => `<span>${x}</span>`).join('')}</div>` : ''}
+      ${crewRow(u.with)}
+    </div>
+  </article>`;
+}
+function renderUpcoming() {
+  const html = UPCOMING.map((u, i) => upcomingCard(u, i === 0)).join('');
+  for (const id of ['#next-map', '#next-trips']) { const box = $(id); if (box) { box.innerHTML = id === '#next-map' ? (UPCOMING[0] ? upcomingCard(UPCOMING[0], true) : '') : html; box.hidden = !html; } }
 }
 
 // --- hero -------------------------------------------------------------------
@@ -104,6 +162,7 @@ function buildMap() {
   const routeColor = getComputedStyle(document.documentElement).getPropertyValue('--series-1').trim();
   const activeColor = getComputedStyle(document.documentElement).getPropertyValue('--series-2').trim();
   const pinFill = getComputedStyle(document.documentElement).getPropertyValue('--pin').trim();
+  const plannedColor = getComputedStyle(document.documentElement).getPropertyValue('--planned').trim();
   const roadColor = getComputedStyle(document.documentElement).getPropertyValue('--road').trim();
   const roadName = d => `${d.fromPl.name} → ${d.toPl.name}`;
   const flownCodes = () => new Set(STATS.airports.map(a => a.code));
@@ -115,6 +174,14 @@ function buildMap() {
     for (const a of STATS.airports) pinLayer.addLayer(pinFor(a));
     const flown = flownCodes();
     for (const p of STATS.road.places) if (!flown.has(p.airport)) pinLayer.addLayer(placePin(p));
+    // adventures still to come: faint dashed lines and hollow dots
+    for (const u of UPCOMING) for (const l of u.legs) {
+      const tip = `<b>${u.emoji || '🧳'} Coming up: ${esc(u.name)}</b>${u.underway ? 'Happening right now' : `${u.sleeps} sleep${u.sleeps === 1 ? '' : 's'} to go`}<br><span class="dim">${fmtDate(u.start)}${u.end && u.end !== u.start ? ' – ' + fmtDate(u.end) : ''}</span>`;
+      const copies = [0, -360, 360].map(dx => l.points.map(([la, lo]) => [la, lo + dx]));
+      arcLayer.addLayer(L.polyline(copies, { color: plannedColor, weight: 2, opacity: 0.9, dashArray: '6 7' }).bindTooltip(tip, { sticky: true, className: 'ap-tip' }));
+      const end = l.kind === 'drive' ? l.toPl : l.toAp;
+      pinLayer.addLayer(L.featureGroup([0, -360, 360].map(dx => L.circleMarker([end.lat, end.lon + dx], { radius: 5, color: plannedColor, weight: 2, dashArray: '2 3', fillColor: '#fff', fillOpacity: 0.6 }))).bindTooltip(tip, { direction: 'top', offset: [0, -6], className: 'ap-tip' }));
+    }
   }
   // drives: dotted line in the road colour, so they read differently from flight arcs
   function roadFor(d, opacity) {
@@ -154,6 +221,7 @@ function buildMap() {
     const b = L.latLngBounds([
       ...FLIGHTS.flatMap(f => [[f.fromAp.lat, shift(f.fromAp.lon)], [f.toAp.lat, shift(f.toAp.lon)]]),
       ...DRIVES.flatMap(d => d.stops.map(p => [p.lat, shift(p.lon)])),
+      ...UPCOMING.flatMap(u => u.legs.flatMap(l => [l.points[0], l.points[l.points.length - 1]].map(([la, lo]) => [la, shift(lo)]))),
     ]);
     map.fitBounds(b, { padding: [40, 40], maxZoom: 5 });
   }

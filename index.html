@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
-<link rel="stylesheet" href="css/style.css?v=3">
+<link rel="stylesheet" href="css/style.css?v=4">
 </head>
 <body>
 <header class="topbar">
@@ -41,6 +41,7 @@
   <section id="hero" class="hero"></section>
 
   <section id="tab-map" class="tab" hidden>
+    <div id="next-map" hidden></div>
     <div class="map-toolbar">
       <button id="replay" class="btn primary">✈️ Fly through every adventure</button>
       <button id="replay-stop" class="btn" hidden>■ Stop</button>
@@ -90,6 +91,7 @@
 
   <section id="tab-trips" class="tab" hidden>
     <h2><span class="em">🎒</span>Adventures</h2>
+    <div id="next-trips" class="next-list" hidden></div>
     <div id="trips-list" class="trips"></div>
   </section>
 

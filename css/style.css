@@ -22,6 +22,7 @@
   --series-2: #ffb400;   /* active arc */
   --pin: #ff6f61;
   --road: #2f8f6b;       /* road trips: dotted lines and pins */
+  --planned: #7a6fd6;    /* adventures still to come */
   --ocean: #bfe3ff;
   --land: #e9f7d9;
   --land-line: #b9d9a3;
@@ -55,6 +56,7 @@
     --series-2: #ffcc4d;
     --pin: #ff8a7e;
     --road: #7ed9b2;
+    --planned: #c9a7ff;
     --ocean: #16244a;
     --land: #2b3f63;
     --land-line: #4b6390;
@@ -319,6 +321,21 @@ table.logbook .small { color: var(--text-secondary); font-size: .78rem; display:
 .empty { color: var(--text-secondary); padding: 2rem; text-align: center; font-weight: 700; }
 .error { background: #fde8e8; color: #7a1f1f; padding: 1rem; border-radius: var(--radius); margin: 1rem 0; }
 
+/* next adventure countdown */
+.next { display: flex; gap: 1rem; align-items: center; background: var(--surface-1); border-radius: var(--radius); box-shadow: var(--shadow); border: 3px dashed var(--planned); padding: .9rem 1.1rem; margin: 0 0 1rem; }
+.next-count { flex: 0 0 auto; min-width: 5.2rem; text-align: center; background: var(--p5); border-radius: 18px; padding: .5rem .7rem; }
+.next-count b { display: block; font-family: "Fredoka", sans-serif; font-size: 2.4rem; line-height: 1; color: var(--planned); }
+.next-count span { font-size: .72rem; font-weight: 800; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .05em; }
+.next-count.now { background: var(--p2); }
+.next-body { min-width: 0; }
+.next-kicker { font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; color: var(--planned); }
+.next h3 { margin: .05rem 0 .15rem; font-size: 1.3rem; font-weight: 600; }
+.next-sub { color: var(--text-secondary); font-size: .88rem; font-weight: 700; }
+.next .notes { margin: .35rem 0 0; font-size: .9rem; }
+.next-unlocks { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .5rem; }
+.next-unlocks span { font-size: .78rem; font-weight: 800; background: var(--p2); border-radius: 999px; padding: .2rem .65rem; }
+.next .crew { margin-top: .5rem; }
+
 /* ---------- phones ---------- */
 @media (max-width: 700px) {
   main { width: calc(100% - 1.5rem); padding-bottom: calc(5.5rem + env(safe-area-inset-bottom)); }
@@ -333,6 +350,12 @@ table.logbook .small { color: var(--text-secondary); font-size: .78rem; display:
   .tabs a:hover { transform: none; }
   .tabs .ti { font-size: 1.35rem; margin: 0; line-height: 1; }
   .tabs a.active { background: var(--sun); }
+  .next { padding: .75rem .8rem; gap: .7rem; align-items: flex-start; }
+  .next-count { min-width: 4.3rem; padding: .45rem .4rem; }
+  .next-count b { font-size: 1.9rem; }
+  .next-count span { font-size: .6rem; }
+  .next h3 { font-size: 1.1rem; }
+  .next-sub { font-size: .8rem; }
   /* hero */
   .hero { grid-template-columns: 1fr; gap: .3rem; padding: .5rem 0 .25rem; }
   .hero .plane { display: none; }
