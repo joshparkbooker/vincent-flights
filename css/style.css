@@ -323,7 +323,8 @@ table.logbook .small { color: var(--text-secondary); font-size: .78rem; display:
   .topbar { padding: .7rem .9rem .3rem; }
   .brand-icon { font-size: 1.8rem; }
   h1 { font-size: 1.25rem; }
-  /* bottom tab bar */
+  /* bottom tab bar: lift the header's stacking context above main/footer, otherwise they sit on top of the fixed bar and swallow taps */
+  header { z-index: 1500; }
   .tabs { position: fixed; left: .5rem; right: .5rem; bottom: calc(.5rem + env(safe-area-inset-bottom)); z-index: 1500; display: grid; grid-template-columns: repeat(6, 1fr); gap: 0; padding: .3rem; background: color-mix(in srgb, var(--surface-1) 92%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-radius: 22px; box-shadow: 0 6px 24px rgba(34,51,85,.18); }
   .tabs a { display: flex; flex-direction: column; align-items: center; gap: .1rem; padding: .35rem 0 .3rem; border-radius: 16px; box-shadow: none; font-size: .62rem; font-weight: 800; letter-spacing: 0; border: 0; background: transparent; }
   .tabs a:hover { transform: none; }
