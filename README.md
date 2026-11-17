@@ -29,7 +29,7 @@ Or just edit the JSON by hand. Each flight looks like:
 }
 ```
 
-Top-level fields: `name`, `birthdate` (YYYY-MM-DD, drives all the age stats), `home` and an optional `trips` object keyed by trip name with `emoji`, `notes` and `photos` (array of image URLs or paths).
+Top-level fields: `name`, `birthdate` (YYYY-MM-DD, drives all the age stats), `home`, an optional `passport` (`{"country": "Australia", "issued": "2026-03-27"}`, which makes that country's stamp show the issue date) and an optional `trips` object keyed by trip name with `emoji`, `notes` and `photos` (array of image URLs or paths).
 
 Durations: if both times are given, the real duration is computed using each airport's time zone. If only distance is known, it's estimated at roughly 800 km/h plus taxi time and marked "est" in the logbook.
 

@@ -2,6 +2,10 @@
   "name": "Vincent",
   "birthdate": "2025-10-31",
   "home": "MEL",
+  "passport": {
+    "country": "Australia",
+    "issued": "2026-03-27"
+  },
   "trips": {
     "First trip to Noosa": {
       "emoji": "🏖️",

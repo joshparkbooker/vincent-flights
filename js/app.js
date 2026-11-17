@@ -362,10 +362,12 @@ function renderPassport() {
   const hash = s => [...s].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7);
   $('#passport-stamps').innerHTML = STATS.countries.map((c, i) => {
     const rot = (hash(c.name) % 13) - 6;
+    // the home-country stamp shows the day his passport was issued rather than a first arrival
+    const issued = DATA.passport?.country === c.name ? DATA.passport.issued : null;
     return `<div class="stamp" style="--rot:${rot}deg">
       <div class="visits">${c.visits}× </div>
       <div class="country">${esc(c.name)}</div>
-      <div><div class="entered">First entered</div><div class="date">${fmtDate(c.first)}</div></div>
+      <div><div class="entered">${issued ? 'Passport issued' : 'First entered'}</div><div class="date">${fmtDate(issued || c.first)}</div></div>
       <div class="cities">${c.cities.map(esc).join(' · ')}</div>
     </div>`;
   }).join('') || '<p class="empty">No stamps yet. Pack the passport!</p>';
