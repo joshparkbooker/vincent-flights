@@ -509,5 +509,21 @@
       "trip": "Easter in Daylesford",
       "notes": "Approximate distance and time"
     }
+  ],
+  "upcoming": [
+    {
+      "name": "Singapore",
+      "emoji": "🦁",
+      "start": "2027-02-12",
+      "route": [
+        "MEL",
+        "SIN"
+      ],
+      "by": "plane",
+      "with": [
+        "Mum",
+        "Dad"
+      ]
+    }
   ]
 }
