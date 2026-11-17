@@ -67,8 +67,9 @@
       "to": "MCY",
       "airline": "Qantas",
       "aircraft": "Boeing 737-800",
-      "duration_min": 140,
-      "trip": "First trip to Noosa"
+      "trip": "First trip to Noosa",
+      "dep_time": "08:10",
+      "arr_time": "09:30"
     },
     {
       "date": "2026-03-18",
