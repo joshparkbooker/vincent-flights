@@ -4,6 +4,7 @@
   "home": "MEL",
   "trips": {
     "First trip to Noosa": {
+      "emoji": "🏖️",
       "photos": [
         {
           "src": "photos/first-trip-to-noosa/img-0808-934b2f75.jpg",

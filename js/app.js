@@ -276,7 +276,7 @@ function renderTrips() {
     const plist = (t.meta.photos || []).map(p => typeof p === 'string' ? { src: p, thumb: p } : p);
     const photos = plist.map((p, i) => `<button class="photo" data-trip="${esc(t.name)}" data-i="${i}" title="${esc(p.caption || '')}"><img src="${esc(p.thumb || p.src)}" alt="${esc(p.caption || '')}" loading="lazy"></button>`).join('');
     const ems = ['🏖️', '🎢', '🏔️', '🦘', '🐠', '🎈', '🚂', '🍦'];
-    const em = ems[[...t.name].reduce((h, ch) => h + ch.charCodeAt(0), 0) % ems.length];
+    const em = t.meta.emoji || ems[[...t.name].reduce((h, ch) => h + ch.charCodeAt(0), 0) % ems.length];
     return `<article class="trip">
       <div class="em">${em}</div>
       <h3>${esc(t.name)}</h3>
