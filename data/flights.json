@@ -322,6 +322,43 @@
         "Cousin Gigi",
         "Auntie Hannah",
         "Uncle Marc"
+      ],
+      "photos": [
+        {
+          "src": "photos/easter-in-daylesford/img-1248-217e9a6b.jpg",
+          "thumb": "photos/easter-in-daylesford/img-1248-217e9a6b-thumb.jpg",
+          "date": "2026-04-04"
+        },
+        {
+          "src": "photos/easter-in-daylesford/img-1256-e7e9781e.jpg",
+          "thumb": "photos/easter-in-daylesford/img-1256-e7e9781e-thumb.jpg",
+          "date": "2026-04-04"
+        },
+        {
+          "src": "photos/easter-in-daylesford/img-1268-14ac761c.jpg",
+          "thumb": "photos/easter-in-daylesford/img-1268-14ac761c-thumb.jpg",
+          "date": "2026-04-04"
+        },
+        {
+          "src": "photos/easter-in-daylesford/img-5443-14400ea7.jpg",
+          "thumb": "photos/easter-in-daylesford/img-5443-14400ea7-thumb.jpg",
+          "date": "2026-04-04"
+        },
+        {
+          "src": "photos/easter-in-daylesford/img-1289-f1d0cea4.jpg",
+          "thumb": "photos/easter-in-daylesford/img-1289-f1d0cea4-thumb.jpg",
+          "date": "2026-04-05"
+        },
+        {
+          "src": "photos/easter-in-daylesford/img-1316-a6a0c038.jpg",
+          "thumb": "photos/easter-in-daylesford/img-1316-a6a0c038-thumb.jpg",
+          "date": "2026-04-05"
+        },
+        {
+          "src": "photos/easter-in-daylesford/img-1340-d696b4f4.jpg",
+          "thumb": "photos/easter-in-daylesford/img-1340-d696b4f4-thumb.jpg",
+          "date": "2026-04-05"
+        }
       ]
     }
   },
