@@ -280,6 +280,28 @@
           ]
         }
       ]
+    },
+    "Creswick weekend": {
+      "emoji": "🚗",
+      "with": [
+        "Mum",
+        "Dad",
+        "Nanni",
+        "Great Grandma Gigi",
+        "Pa"
+      ]
+    },
+    "Easter in Daylesford": {
+      "emoji": "🐣",
+      "with": [
+        "Mum",
+        "Dad",
+        "Mimi",
+        "Papa",
+        "Cousin Gigi",
+        "Auntie Hannah",
+        "Uncle Marc"
+      ]
     }
   },
   "flights": [
@@ -427,6 +449,61 @@
       "arr_time": "08:20",
       "trip": "Around the world",
       "notes": "Scheduled times"
+    }
+  ],
+  "places": {
+    "Melbourne": {
+      "lat": -37.8136,
+      "lon": 144.9631,
+      "country": "Australia"
+    },
+    "Creswick": {
+      "lat": -37.424,
+      "lon": 143.894,
+      "country": "Australia"
+    },
+    "Daylesford": {
+      "lat": -37.348,
+      "lon": 144.143,
+      "country": "Australia"
+    }
+  },
+  "drives": [
+    {
+      "date": "2026-01-31",
+      "from": "Melbourne",
+      "to": "Creswick",
+      "km": 130,
+      "duration_min": 100,
+      "trip": "Creswick weekend",
+      "notes": "Approximate distance and time"
+    },
+    {
+      "date": "2026-02-01",
+      "from": "Creswick",
+      "to": "Melbourne",
+      "km": 130,
+      "duration_min": 100,
+      "trip": "Creswick weekend",
+      "notes": "Approximate distance and time"
+    },
+    {
+      "date": "2026-04-03",
+      "from": "Melbourne",
+      "to": "Daylesford",
+      "km": 115,
+      "duration_min": 95,
+      "trip": "Easter in Daylesford",
+      "notes": "Approximate distance and time"
+    },
+    {
+      "date": "2026-04-06",
+      "from": "Daylesford",
+      "to": "Melbourne",
+      "km": 115,
+      "duration_min": 95,
+      "trip": "Easter in Daylesford",
+      "notes": "Approximate distance and time"
     }
   ]
 }
