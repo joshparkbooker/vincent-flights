@@ -10,7 +10,8 @@ const fmtDur = m => { const h = Math.floor(m / 60), mm = m % 60; return h ? `${h
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const el = (html) => { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstElementChild; };
 
-let DATA, FLIGHTS, STATS, TRIPS, WORLD, map, mapBuilt = false;
+let DATA, FLIGHTS, STATS, TRIPS, WORLD, AIRPORTS, map, mapBuilt = false;
+const airportsLon = code => AIRPORTS?.[code]?.lon;
 
 async function main() {
   try {
@@ -19,7 +20,7 @@ async function main() {
       fetch('data/airports.json').then(r => r.json()),
       fetch('data/world.geo.json').then(r => r.json()),
     ]);
-    WORLD = world;
+    WORLD = world; AIRPORTS = airports;
     DATA = data;
     FLIGHTS = enrichFlights(data, airports);
     STATS = computeStats(data, FLIGHTS);
@@ -103,21 +104,26 @@ function buildMap() {
     for (const a of STATS.airports) pinLayer.addLayer(pinFor(a));
   }
   function arcFor(f, color, opacity) {
-    const line = L.polyline(f.points, { color, weight: 2, opacity, smoothFactor: 0.5 });
+    // draw on the centre copy and both neighbours so arcs crossing the antimeridian always read whole
+    const copies = [0, -360, 360].map(dx => f.points.map(([la, lo]) => [la, lo + dx]));
+    const line = L.polyline(copies, { color, weight: 2, opacity, smoothFactor: 0.5 });
     line.bindTooltip(`<b>${esc(f.flight || '')} ${esc(f.from)} → ${esc(f.to)}</b>${fmtDateLong(f.date)}<br>${esc(f.airline || '')}${f.aircraft ? ' · ' + esc(f.aircraft) : ''}<br><span class="dim">${fmtInt(f.km)} km · ${fmtDur(f.durationMin)}${f.age ? ' · aged ' + formatAge(f.age, true) : ''}</span>`, { sticky: true, className: 'ap-tip' });
     return line;
   }
   function pinFor(a, visits = a.visits, dates = a.dates) {
-    const m = L.circleMarker([a.ap.lat, a.ap.lon], {
+    const m = L.featureGroup([0, -360, 360].map(dx => L.circleMarker([a.ap.lat, a.ap.lon + dx], {
       radius: 5 + 2.2 * Math.sqrt(visits), color: '#fff', weight: 2, fillColor: pinFill, fillOpacity: 0.9,
-    });
+    })));
     const uniq = [...new Set(dates)].sort();
     m.bindTooltip(`<b>${esc(a.code)} · ${esc(a.ap.c)}</b>${esc(a.ap.n)}<br><span class="dim">${esc(a.ap.k)} · ${visits} visit${visits === 1 ? '' : 's'}</span><br><span class="dim">${uniq.map(fmtDate).join(', ')}</span>`, { direction: 'top', offset: [0, -6], className: 'ap-tip' });
     return m;
   }
   function fitAll() {
     if (!FLIGHTS.length) { map.setView([-25, 134], 3); return; }
-    const b = L.latLngBounds(FLIGHTS.flatMap(f => f.points));
+    // centre the world on home: shift every airport into the 360° window around the home longitude
+    const homeLon = airportsLon(DATA.home) ?? FLIGHTS[0].fromAp.lon;
+    const shift = lon => { let x = lon; while (x < homeLon - 180) x += 360; while (x >= homeLon + 180) x -= 360; return x; };
+    const b = L.latLngBounds(FLIGHTS.flatMap(f => [[f.fromAp.lat, shift(f.fromAp.lon)], [f.toAp.lat, shift(f.toAp.lon)]]));
     map.fitBounds(b, { padding: [40, 40], maxZoom: 5 });
   }
   drawAll(); fitAll();
@@ -243,7 +249,7 @@ function renderLogbook() {
     <td class="route"><b>${esc(f.from)} → ${esc(f.to)}</b><span class="dim">${esc(f.fromAp.c)} to ${esc(f.toAp.c)}</span></td>
     <td>${esc(f.flight || '')}</td>
     <td>${esc(f.airline || '')}<span class="small">${esc(f.aircraft || '')}</span></td>
-    <td class="num">${f.dep_time ? esc(f.dep_time) + '–' + esc(f.arr_time) : '<span class="est">—</span>'}${f.overnight ? '<span class="tag">overnight</span>' : ''}</td>
+    <td class="num">${f.dep_time ? esc(f.dep_time) + '–' + esc(f.arr_time) : '<span class="est">—</span>'}${f.overnight ? '<span class="tag">overnight</span>' : ''}${f.transit ? '<span class="tag" title="Stayed in the airport">transit</span>' : ''}</td>
     <td class="num">${fmtInt(f.km)}</td>
     <td class="num">${fmtDur(f.durationMin)}${f.durationEstimated ? '<span class="tag" title="Estimated from distance">est</span>' : ''}</td>
     <td>${f.age ? formatAge(f.age, true) : ''}</td>

@@ -141,14 +141,17 @@ export function computeStats(data, flights) {
     e.visits++; if (when < e.first) e.first = when;
     cityFirst.set(k, e);
   };
-  flights.forEach((f, i) => { if (i === 0) noteCity(f.fromAp, f.date); noteCity(f.toAp, f.arrDate); });
+  // airports only ever passed through (transit: true on the arriving flight) don't count as places or countries
+  const transit = new Set(flights.filter(f => f.transit).map(f => f.to));
+  flights.forEach((f, i) => { if (i === 0 && !transit.has(f.from)) noteCity(f.fromAp, f.date); if (!transit.has(f.to)) noteCity(f.toAp, f.arrDate); });
   // stops inside trips count as places too (a town reached by car or train)
   for (const [name, meta] of Object.entries(data.trips || {})) {
     const tripFlights = flights.filter(f => f.trip === name);
     const tripStart = tripFlights[0]?.date || '9999';
     for (const st of meta.stops || []) {
       if (!st.name) continue;
-      const country = st.country || tripFlights.find(f => f.toAp.c === st.name)?.toAp.k || tripFlights[tripFlights.length - 1]?.toAp.k || '';
+      const before = tripFlights.filter(f => !f.transit && (!st.from || f.arrDate <= st.from));
+      const country = st.country || tripFlights.find(f => f.toAp.c === st.name)?.toAp.k || before[before.length - 1]?.toAp.k || tripFlights[0]?.toAp.k || '';
       const k = `${st.name}, ${country}`;
       if ([...cityFirst.keys()].some(key => key.toLowerCase() === k.toLowerCase())) continue;
       cityFirst.set(k, { name: st.name, country, first: st.from || tripStart, visits: 1, stop: true });
@@ -159,13 +162,14 @@ export function computeStats(data, flights) {
   const countryFirst = new Map();
   for (const f of flights) {
     for (const [ap, when] of [[f.fromAp, f.date], [f.toAp, f.arrDate]]) {
+      if (transit.has(ap === f.fromAp ? f.from : f.to)) continue;
       const e = countryFirst.get(ap.k) || { name: ap.k, continent: continentOf(ap.k), first: when, visits: 0, cities: new Set() };
       if (when < e.first) e.first = when;
       e.cities.add(ap.c);
       countryFirst.set(ap.k, e);
     }
     // a visit = an arrival into the country
-    const e = countryFirst.get(f.toAp.k); e.visits++;
+    if (!transit.has(f.to)) countryFirst.get(f.toAp.k).visits++;
   }
   const countries = [...countryFirst.values()].map(c => ({ ...c, cities: [...c.cities] }))
     .sort((a, b) => a.first.localeCompare(b.first));

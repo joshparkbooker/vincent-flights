@@ -75,6 +75,43 @@
     },
     "Bali trip": {
       "emoji": "🌴"
+    },
+    "Around the world": {
+      "emoji": "🌏",
+      "notes": "Melbourne to Melbourne the long way round: east the whole way.",
+      "stops": [
+        {
+          "name": "Tokyo",
+          "from": "2026-09-04",
+          "to": "2026-09-08",
+          "emoji": "🗼"
+        },
+        {
+          "name": "Mexico City",
+          "from": "2026-09-08",
+          "to": "2026-09-15",
+          "emoji": "🌮"
+        },
+        {
+          "name": "Boulder",
+          "country": "United States",
+          "from": "2026-09-15",
+          "to": "2026-09-19",
+          "emoji": "🏔️"
+        },
+        {
+          "name": "Chicago",
+          "from": "2026-09-19",
+          "to": "2026-09-23",
+          "emoji": "🌭"
+        },
+        {
+          "name": "New York",
+          "from": "2026-09-23",
+          "to": "2026-09-28",
+          "emoji": "🗽"
+        }
+      ]
     }
   },
   "flights": [
@@ -121,6 +158,106 @@
       "dep_time": "12:05",
       "arr_time": "19:40",
       "trip": "Bali trip",
+      "notes": "Scheduled times"
+    },
+    {
+      "date": "2026-09-04",
+      "flight": "JQ34",
+      "from": "MEL",
+      "to": "CNS",
+      "airline": "Jetstar",
+      "aircraft": "Airbus A321neo",
+      "dep_time": "06:25",
+      "arr_time": "09:45",
+      "trip": "Around the world",
+      "transit": true,
+      "notes": "Scheduled times. Stopover only, stayed in the airport"
+    },
+    {
+      "date": "2026-09-04",
+      "flight": "JQ25",
+      "from": "CNS",
+      "to": "NRT",
+      "airline": "Jetstar",
+      "aircraft": "Boeing 787-8",
+      "dep_time": "11:40",
+      "arr_time": "18:05",
+      "trip": "Around the world",
+      "notes": "Scheduled times"
+    },
+    {
+      "date": "2026-09-08",
+      "flight": "AM57",
+      "from": "NRT",
+      "to": "MEX",
+      "airline": "Aeroméxico",
+      "aircraft": "Boeing 787-9",
+      "dep_time": "09:35",
+      "arr_time": "07:30",
+      "arr_date": "2026-09-08",
+      "trip": "Around the world",
+      "notes": "Scheduled times. Landed before he took off, thanks to the date line"
+    },
+    {
+      "date": "2026-09-15",
+      "flight": "AM658",
+      "from": "MEX",
+      "to": "DEN",
+      "airline": "Aeroméxico",
+      "aircraft": "Boeing 737 MAX 9",
+      "dep_time": "09:30",
+      "arr_time": "13:19",
+      "trip": "Around the world",
+      "notes": "Scheduled times"
+    },
+    {
+      "date": "2026-09-19",
+      "flight": "UA2865",
+      "from": "DEN",
+      "to": "ORD",
+      "airline": "United",
+      "aircraft": "Boeing 737-900",
+      "dep_time": "11:15",
+      "arr_time": "14:34",
+      "trip": "Around the world",
+      "notes": "Scheduled times"
+    },
+    {
+      "date": "2026-09-23",
+      "flight": "UA669",
+      "from": "ORD",
+      "to": "LGA",
+      "airline": "United",
+      "aircraft": "Boeing 737-800",
+      "dep_time": "10:00",
+      "arr_time": "13:03",
+      "trip": "Around the world",
+      "notes": "Scheduled times"
+    },
+    {
+      "date": "2026-09-28",
+      "flight": "QF4",
+      "from": "JFK",
+      "to": "AKL",
+      "airline": "Qantas",
+      "aircraft": "Boeing 787-9",
+      "dep_time": "19:20",
+      "arr_time": "05:55",
+      "arr_date": "2026-09-30",
+      "trip": "Around the world",
+      "transit": true,
+      "notes": "Scheduled times. Stopover only, stayed in the airport"
+    },
+    {
+      "date": "2026-09-30",
+      "flight": "QF152",
+      "from": "AKL",
+      "to": "MEL",
+      "airline": "Qantas",
+      "aircraft": "Boeing 737-800",
+      "dep_time": "07:10",
+      "arr_time": "08:20",
+      "trip": "Around the world",
       "notes": "Scheduled times"
     }
   ]
