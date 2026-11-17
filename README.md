@@ -1,0 +1,50 @@
+# Vincent's Flight Log
+
+A static site that tracks every flight Vincent has taken: a world map with great-circle arcs and an animated replay, lifetime stats, firsts, age-based figures, a pilot's logbook, passport stamps per country, trips, and badges.
+
+No build step. Everything is computed in the browser from `data/flights.json`.
+
+## Adding a flight
+
+1. Open `add.html` on the live site (or locally), fill in the form, copy the JSON.
+2. Paste it into the `flights` array in `data/flights.json` and commit.
+
+Or just edit the JSON by hand. Each flight looks like:
+
+```json
+{
+  "date": "2026-02-14",          // departure date, local
+  "flight": "QF430",             // optional
+  "from": "MEL",                 // IATA code (must exist in data/airports.json)
+  "to": "SYD",
+  "airline": "Qantas",           // optional
+  "aircraft": "Boeing 737-800",  // optional, used for aircraft stats + widebody badge
+  "dep_time": "09:00",           // optional, local time at origin
+  "arr_time": "10:25",           // optional, local time at destination
+  "arr_date": "2026-02-15",      // optional, only if arrival is on a later date
+  "duration_min": 85,            // optional, overrides times; otherwise estimated from distance
+  "seat": "14A",                 // optional
+  "trip": "Sydney to meet the cousins",  // optional, groups flights into a trip
+  "overnight": true              // optional, force the red-eye flag
+}
+```
+
+Top-level fields: `name`, `birthdate` (YYYY-MM-DD, drives all the age stats), `home` and an optional `trips` object keyed by trip name with `notes` and `photos` (array of image URLs or paths).
+
+Durations: if both times are given, the real duration is computed using each airport's time zone. If only distance is known, it's estimated at roughly 800 km/h plus taxi time and marked "est" in the logbook.
+
+## Local preview
+
+```
+python3 -m http.server 8000
+```
+
+Then open http://localhost:8000. Modules and `fetch` need a server; opening `index.html` directly won't work.
+
+## Airports data
+
+`data/airports.json` is derived from [OpenFlights](https://openflights.org/data.html) (airports.dat, ODbL). Rebuild with:
+
+```
+python3 -I scripts/build_airports.py /path/to/airports.dat data/airports.json
+```

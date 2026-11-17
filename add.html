@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Add a flight</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  form { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: .75rem 1rem; background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; box-shadow: var(--shadow); margin-top: 1rem; }
+  label { display: flex; flex-direction: column; gap: .25rem; font-size: .8rem; color: var(--text-secondary); }
+  input, select { font: inherit; padding: .5rem .6rem; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-0); color: var(--text-primary); }
+  input:user-invalid { border-color: #d03b3b; }
+  .full { grid-column: 1 / -1; }
+  .ap { font-size: .75rem; color: var(--text-muted); min-height: 1em; }
+  .actions { grid-column: 1 / -1; display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+  pre { background: var(--surface-2); padding: 1rem; border-radius: var(--radius); overflow: auto; font-size: .85rem; }
+  .steps { color: var(--text-secondary); font-size: .9rem; }
+  .steps li { margin: .3rem 0; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="brand-icon">✈️</span><div><h1>Add a flight</h1><p class="sub">Fill this in, copy the JSON, paste it into <code>data/flights.json</code>.</p></div></div>
+  <nav class="tabs"><a href="index.html">← Back to the log</a></nav>
+</header>
+<main>
+<form id="f">
+  <label>Date (departure, local) <input name="date" type="date" required></label>
+  <label>Flight number <input name="flight" placeholder="QF430" style="text-transform:uppercase"></label>
+  <label>From (IATA) <input name="from" placeholder="MEL" maxlength="3" required pattern="[A-Za-z]{3}" style="text-transform:uppercase"><span class="ap" id="from-ap"></span></label>
+  <label>To (IATA) <input name="to" placeholder="SYD" maxlength="3" required pattern="[A-Za-z]{3}" style="text-transform:uppercase"><span class="ap" id="to-ap"></span></label>
+  <label>Airline <input name="airline" list="airlines" placeholder="Qantas"></label>
+  <label>Aircraft <input name="aircraft" list="aircrafts" placeholder="Boeing 737-800"></label>
+  <label>Departure time (local) <input name="dep_time" type="time"></label>
+  <label>Arrival time (local) <input name="arr_time" type="time"></label>
+  <label>Arrival date (only if not the same day) <input name="arr_date" type="date"></label>
+  <label>Or duration in minutes (if no times) <input name="duration_min" type="number" min="1"></label>
+  <label>Seat <input name="seat" placeholder="14A"></label>
+  <label>Trip name (groups flights together) <input name="trip" list="trips" placeholder="Sydney to meet the cousins"></label>
+  <label class="full">Notes <input name="notes" placeholder="Slept the whole way"></label>
+  <div class="actions">
+    <button type="submit" class="btn primary">Generate JSON</button>
+    <button type="button" id="copy" class="btn" hidden>Copy to clipboard</button>
+    <span id="dist" class="ap"></span>
+  </div>
+</form>
+<datalist id="airlines"></datalist><datalist id="aircrafts"></datalist><datalist id="trips"></datalist>
+<pre id="out" hidden></pre>
+<ol class="steps">
+  <li>Open <code>data/flights.json</code> in GitHub (or your editor).</li>
+  <li>Paste the generated object into the <code>"flights"</code> array, after the last entry, with a comma before it.</li>
+  <li>Commit. The site rebuilds itself on the next load.</li>
+</ol>
+</main>
+<script type="module">
+import { haversineKm } from './js/geo.js';
+const airports = await fetch('data/airports.json').then(r => r.json());
+const existing = await fetch('data/flights.json', { cache: 'no-store' }).then(r => r.json()).catch(() => ({ flights: [] }));
+const fill = (id, vals) => document.getElementById(id).innerHTML = [...new Set(vals.filter(Boolean))].map(v => `<option value="${v.replace(/"/g, '&quot;')}">`).join('');
+fill('airlines', existing.flights.map(f => f.airline));
+fill('aircrafts', existing.flights.map(f => f.aircraft));
+fill('trips', existing.flights.map(f => f.trip));
+const form = document.getElementById('f'), out = document.getElementById('out'), copy = document.getElementById('copy');
+const look = (name) => {
+  const inp = form.elements[name], span = document.getElementById(`${name}-ap`);
+  const ap = airports[inp.value.toUpperCase()];
+  span.textContent = ap ? `${ap.n}, ${ap.c}, ${ap.k}` : (inp.value.length === 3 ? 'Unknown code' : '');
+  inp.setCustomValidity(inp.value.length === 3 && !ap ? 'Unknown airport code' : '');
+  const a = airports[form.elements.from.value.toUpperCase()], b = airports[form.elements.to.value.toUpperCase()];
+  document.getElementById('dist').textContent = a && b ? `${Math.round(haversineKm(a, b)).toLocaleString()} km great-circle` : '';
+};
+form.elements.from.addEventListener('input', () => look('from'));
+form.elements.to.addEventListener('input', () => look('to'));
+form.addEventListener('submit', e => {
+  e.preventDefault();
+  const fd = new FormData(form), o = {};
+  for (const [k, v] of fd.entries()) {
+    if (!v) continue;
+    o[k] = ['from', 'to', 'flight'].includes(k) ? v.toUpperCase() : k === 'duration_min' ? Number(v) : v;
+  }
+  out.textContent = JSON.stringify(o, null, 2) + ',';
+  out.hidden = false; copy.hidden = false;
+});
+copy.onclick = async () => { await navigator.clipboard.writeText(out.textContent); copy.textContent = 'Copied!'; setTimeout(() => copy.textContent = 'Copy to clipboard', 1500); };
+</script>
+</body>
+</html>

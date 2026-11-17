@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vincent's Flight Log</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✈️</text></svg>">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-icon">✈️</span>
+    <div>
+      <h1 id="title">Vincent's Flight Log</h1>
+      <p class="sub" id="subtitle">Every flight, every city, every kilometre.</p>
+    </div>
+  </div>
+  <nav class="tabs" role="tablist">
+    <a href="#map" data-tab="map">Map</a>
+    <a href="#stats" data-tab="stats">Stats</a>
+    <a href="#logbook" data-tab="logbook">Logbook</a>
+    <a href="#passport" data-tab="passport">Passport</a>
+    <a href="#trips" data-tab="trips">Trips</a>
+    <a href="#badges" data-tab="badges">Badges</a>
+  </nav>
+</header>
+
+<main>
+  <section id="hero" class="hero"></section>
+
+  <section id="tab-map" class="tab" hidden>
+    <div class="map-toolbar">
+      <button id="replay" class="btn primary">▶ Replay his life in flights</button>
+      <button id="replay-stop" class="btn" hidden>■ Stop</button>
+      <span id="replay-status" class="replay-status"></span>
+    </div>
+    <div id="map"></div>
+    <p class="hint">Arcs follow the great-circle route. Pins grow with each visit. Hover a pin or an arc for details.</p>
+  </section>
+
+  <section id="tab-stats" class="tab" hidden>
+    <h2>Lifetime totals</h2>
+    <div id="totals" class="tiles"></div>
+    <h2>That's about…</h2>
+    <div id="comparisons" class="tiles compact"></div>
+    <h2>Growing up in the air</h2>
+    <div id="agestats" class="tiles compact"></div>
+    <h2>Firsts</h2>
+    <div id="firsts" class="firsts"></div>
+    <div class="two-col">
+      <div><h2>Airlines</h2><ol id="airlines" class="ranked"></ol></div>
+      <div><h2>Aircraft</h2><ol id="aircraft" class="ranked"></ol></div>
+      <div><h2>Busiest airports</h2><ol id="busiest" class="ranked"></ol></div>
+      <div><h2>By year</h2><table id="peryear" class="mini"></table></div>
+    </div>
+  </section>
+
+  <section id="tab-logbook" class="tab" hidden>
+    <h2>Pilot's logbook</h2>
+    <div class="logbook-wrap"><table id="logbook" class="logbook"></table></div>
+  </section>
+
+  <section id="tab-passport" class="tab" hidden>
+    <h2>Passport</h2>
+    <div id="passport" class="stamps"></div>
+  </section>
+
+  <section id="tab-trips" class="tab" hidden>
+    <h2>Trips</h2>
+    <div id="trips" class="trips"></div>
+  </section>
+
+  <section id="tab-badges" class="tab" hidden>
+    <h2>Badges</h2>
+    <div id="badges" class="badges"></div>
+  </section>
+</main>
+
+<footer>
+  <span>Add a flight with the <a href="add.html">flight form</a>, then commit <code>data/flights.json</code>.</span>
+  <span id="datanote"></span>
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
