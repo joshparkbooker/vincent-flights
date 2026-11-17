@@ -1,4 +1,4 @@
-import { enrichFlights, computeStats, groupTrips, formatAge, ageAt } from './stats.js';
+import { enrichFlights, computeStats, groupTrips, formatAge, ageAt, computeCrew, normPerson } from './stats.js';
 import { EARTH_CIRCUMFERENCE_KM, MOON_DISTANCE_KM } from './geo.js';
 
 const $ = sel => document.querySelector(sel);
@@ -10,7 +10,7 @@ const fmtDur = m => { const h = Math.floor(m / 60), mm = m % 60; return h ? `${h
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const el = (html) => { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstElementChild; };
 
-let DATA, FLIGHTS, STATS, TRIPS, WORLD, AIRPORTS, map, mapBuilt = false;
+let DATA, FLIGHTS, STATS, TRIPS, CREW, WORLD, AIRPORTS, map, mapBuilt = false;
 const airportsLon = code => AIRPORTS?.[code]?.lon;
 
 async function main() {
@@ -25,6 +25,7 @@ async function main() {
     FLIGHTS = enrichFlights(data, airports);
     STATS = computeStats(data, FLIGHTS);
     TRIPS = groupTrips(FLIGHTS, data.trips || {});
+    CREW = computeCrew(TRIPS);
   } catch (e) {
     $('main').prepend(el(`<div class="error">Could not load flight data: ${esc(e.message)}</div>`));
     console.error(e);
@@ -34,6 +35,7 @@ async function main() {
   $('#title').textContent = `${DATA.name}'s Big Adventures`;
   renderHero();
   renderStats();
+  renderCrew();
   renderLogbook();
   renderPassport();
   renderTrips();
@@ -241,6 +243,26 @@ function renderStats() {
     s.perYear.map(y => `<tr><td>${y.year}</td><td>${y.flights}</td><td>${fmtInt(y.km)}</td><td>${fmt1(y.minutes / 60)}</td></tr>`).join('');
 }
 
+// --- travel crew ------------------------------------------------------------
+function renderCrew() {
+  const el_ = $('#crew-grid'); if (!el_) return;
+  el_.innerHTML = CREW.map(p => {
+    const n = p.adventures.length;
+    return `<div class="crew-card${p.buddy ? ' buddy' : ''}">
+      <i class="avatar" style="background:${avatarColor(p.name)}">${p.buddy ? '✨' : esc(initials(p.name))}</i>
+      <div class="crew-name">${esc(p.name)}</div>
+      ${p.buddy ? `<div class="crew-buddy">Travel buddy</div>` : ''}
+      <div class="crew-count">${n} adventure${n === 1 ? '' : 's'} together</div>
+      <div class="crew-first">since ${fmtDate(p.first)}</div>
+      ${p.note ? `<div class="crew-note">${esc(p.note)}</div>` : ''}
+      <div class="crew-list">${[...new Set(p.adventures.map(a => a.trip))].map(trip => {
+        const stops = p.adventures.filter(a => a.trip === trip && a.stop).map(a => a.stop);
+        return esc(trip) + (stops.length ? ` (${stops.map(esc).join(', ')})` : '');
+      }).join(' · ')}</div>
+    </div>`;
+  }).join('') || '<p class="empty">Nobody yet.</p>';
+}
+
 // --- logbook ----------------------------------------------------------------
 function renderLogbook() {
   const rows = FLIGHTS.map(f => `<tr>
@@ -275,6 +297,14 @@ function renderPassport() {
 }
 
 // --- trips ------------------------------------------------------------------
+const AVATAR_COLORS = ['#ffd23f', '#7ed9b2', '#5fb6ff', '#c9a7ff', '#ffb98a', '#ff9eb5', '#9ad7f5', '#c5e384'];
+const avatarColor = name => AVATAR_COLORS[[...name].reduce((h, ch) => h + ch.charCodeAt(0), 0) % AVATAR_COLORS.length];
+const initials = name => name.split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+function crewRow(list, label = 'With') {
+  const people = (list || []).map(normPerson);
+  if (!people.length) return '';
+  return `<div class="crew"><span class="crew-label">${label}</span>${people.map(p => `<span class="person${p.buddy ? ' buddy' : ''}" title="${esc(p.note || '')}"><i style="background:${avatarColor(p.name)}">${p.buddy ? '✨' : esc(initials(p.name))}</i>${esc(p.name)}${p.buddy ? '<em>travel buddy</em>' : ''}</span>`).join('')}</div>`;
+}
 const normPhotos = list => (list || []).map(p => typeof p === 'string' ? { src: p, thumb: p } : p);
 function photoStrip(list, tripName, stopIdx) {
   const plist = normPhotos(list);
@@ -295,6 +325,7 @@ function renderTrips() {
       return `<section class="stop">
         <div class="stop-head"><span class="stop-em">${st.emoji || '📍'}</span><div><h4>${esc(st.name)}</h4><div class="stop-dates">${sd}${nights ? ` · ${nights} night${nights === 1 ? '' : 's'}` : ''}</div></div></div>
         ${st.notes ? `<p class="notes">${esc(st.notes)}</p>` : ''}
+        ${crewRow(st.with)}
         ${photoStrip(st.photos, t.name, si)}
       </section>`;
     }).join('');
@@ -305,6 +336,7 @@ function renderTrips() {
       ${age ? `<div class="age">${DATA.name} was ${formatAge(age)} old</div>` : ''}
       <div class="summary"><b>${fmtInt(t.km)} km</b>${t.flights.length} flight${t.flights.length === 1 ? '' : 's'} · ${fmtDur(t.minutes)}${nPhotos ? ` · ${nPhotos} photos` : ''}</div>
       ${t.meta.notes ? `<p class="notes">${esc(t.meta.notes)}</p>` : ''}
+      ${crewRow(t.meta.with)}
       <div class="legs">${t.flights.map(f => `<span class="leg"><b>${esc(f.from)}→${esc(f.to)}</b> ${fmtDate(f.date)}${f.flight ? ' · ' + esc(f.flight) : ''}</span>`).join('')}</div>
       ${photoStrip(t.meta.photos, t.name, -1)}
       ${stops ? `<div class="stops">${stops}</div>` : ''}

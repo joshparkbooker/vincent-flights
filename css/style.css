@@ -269,6 +269,33 @@ table.logbook .small { color: var(--text-secondary); font-size: .78rem; display:
 .stop .photos { margin-top: .6rem; }
 .stop .photo img { height: 110px; width: 110px; }
 
+/* travel crew */
+.crew { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; margin-top: .5rem; }
+.crew-label { font-size: .75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: .08em; margin-right: .2rem; }
+.person { display: inline-flex; align-items: center; gap: .4rem; background: var(--surface-1); border-radius: 999px; padding: .2rem .7rem .2rem .25rem; font-size: .82rem; font-weight: 800; box-shadow: var(--shadow); }
+.stop .person { background: var(--surface-1); }
+.person i, .avatar { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; font-style: normal; font-size: .7rem; font-weight: 900; color: #223355; border: 2px solid #fff; }
+.person.buddy { background: linear-gradient(90deg, #fff4c2, #ffe1f0); border: 2px solid var(--sun); }
+.person.buddy em { font-style: normal; font-size: .65rem; font-weight: 900; color: #b07d00; text-transform: uppercase; letter-spacing: .06em; margin-left: .1rem; }
+.crew-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: .9rem; }
+.crew-card { background: var(--surface-1); border-radius: var(--radius); padding: 1rem .9rem; text-align: center; box-shadow: var(--shadow); border: 3px solid var(--surface-1); }
+.crew-card .avatar { width: 54px; height: 54px; font-size: 1.2rem; border-width: 4px; margin: 0 auto; }
+.crew-card .crew-name { font-family: "Fredoka", sans-serif; font-weight: 600; font-size: 1.15rem; margin-top: .45rem; }
+.crew-card .crew-count { font-weight: 800; font-size: .85rem; color: var(--text-secondary); margin-top: .15rem; }
+.crew-card .crew-first { font-size: .75rem; color: var(--text-muted); font-weight: 700; }
+.crew-card .crew-note { font-size: .78rem; color: var(--text-secondary); font-weight: 700; margin-top: .35rem; }
+.crew-card .crew-list { font-size: .7rem; color: var(--text-muted); font-weight: 600; margin-top: .4rem; line-height: 1.35; }
+.crew-card .crew-buddy { display: inline-block; font-size: .65rem; font-weight: 900; color: #b07d00; background: #fff4c2; border-radius: 999px; padding: .1rem .5rem; text-transform: uppercase; letter-spacing: .06em; margin-top: .2rem; }
+.crew-card.buddy { border-color: var(--sun); background: linear-gradient(180deg, #fffbe8, var(--surface-1)); animation: shimmer 2.4s ease-in-out infinite; }
+@keyframes shimmer { 0%, 100% { box-shadow: var(--shadow); } 50% { box-shadow: 0 0 0 6px rgba(255, 210, 63, .35), var(--shadow); } }
+@media (prefers-reduced-motion: reduce) { .crew-card.buddy { animation: none; } }
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) .person.buddy { background: linear-gradient(90deg, #4a4120, #4d2a3c); color: var(--text-primary); }
+  :root:where(:not([data-theme="light"])) .crew-card.buddy { background: linear-gradient(180deg, #3a3520, var(--surface-1)); }
+  :root:where(:not([data-theme="light"])) .person.buddy em, :root:where(:not([data-theme="light"])) .crew-card .crew-buddy { color: #ffd23f; }
+  :root:where(:not([data-theme="light"])) .crew-card .crew-buddy { background: #4a4120; }
+}
+
 /* badges = stickers */
 .badges { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 1.1rem; }
 .badge { background: var(--surface-1); border-radius: 50% 50% 50% 50% / 45% 45% 55% 55%; aspect-ratio: 1; padding: 1rem .8rem; text-align: center; box-shadow: var(--shadow); border: 5px solid #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; transform: rotate(var(--rot, 0deg)); transition: transform .15s; }

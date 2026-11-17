@@ -291,3 +291,22 @@ export function computeBadges(s, flights) {
   })() });
   return b;
 }
+
+// --- travel crew -------------------------------------------------------------
+export const normPerson = x => typeof x === 'string' ? { name: x } : x;
+export function computeCrew(trips) {
+  const crew = new Map();
+  const note = (person, label, date, km) => {
+    const p = normPerson(person);
+    const e = crew.get(p.name) || { name: p.name, buddy: !!p.buddy, note: p.note || '', adventures: [], first: date, km: 0 };
+    if (p.buddy) e.buddy = true; if (p.note) e.note = p.note;
+    e.adventures.push(label); e.km += km;
+    if (date < e.first) e.first = date;
+    crew.set(p.name, e);
+  };
+  for (const t of trips) {
+    for (const x of t.meta.with || []) note(x, { trip: t.name, stop: null }, t.start, t.km);
+    for (const st of t.stops) for (const x of st.with || []) note(x, { trip: t.name, stop: st.name }, st.from || t.start, 0);
+  }
+  return [...crew.values()].sort((a, b) => b.adventures.length - a.adventures.length || a.first.localeCompare(b.first));
+}

@@ -67,6 +67,8 @@ A trip can list stops, each with its own dates, notes and photos. Flights still 
 }
 ```
 
+Add `"with": ["Mum", "Dad"]` to a trip or a stop to show who came along. A person can be an object, e.g. `{"name": "Ollie", "buddy": true, "note": "Vincent's best mate"}`, to mark a travel buddy.
+
 Attach photos to a stop with `--stop`:
 
 ```
