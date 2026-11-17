@@ -29,8 +29,8 @@ async function main() {
     console.error(e);
     return;
   }
-  document.title = `${DATA.name}'s Flight Log`;
-  $('#title').textContent = `${DATA.name}'s Flight Log`;
+  document.title = `${DATA.name}'s Big Adventures`;
+  $('#title').textContent = `${DATA.name}'s Big Adventures`;
   renderHero();
   renderStats();
   renderLogbook();
@@ -55,19 +55,30 @@ function setupTabs() {
 
 // --- hero -------------------------------------------------------------------
 function renderHero() {
-  const s = STATS, life = s.life;
-  const ageTxt = life ? `${DATA.name} is ${formatAge(life.ageNow)} old` : DATA.name;
+  const s = STATS, life = s.life, name = esc(DATA.name);
+  const headline = s.flights
+    ? `${name} has zoomed <b>${fmtInt(s.totalKm)} km</b> through the sky!`
+    : `${name}'s adventures are about to begin!`;
   $('#hero').innerHTML = `
-    <div class="big">${fmtInt(s.totalKm)}<small>km flown</small></div>
-    <div class="meta">${s.flights} flight${s.flights === 1 ? '' : 's'} · ${fmtDur(s.totalMin)} in the air · ${s.cities.length} cities · ${s.countries.length} countr${s.countries.length === 1 ? 'y' : 'ies'}</div>
-    <div class="meta">${esc(ageTxt)}${s.firsts ? ` · first flew at ${formatAge(s.firsts.flight.age)} old` : ''}</div>`;
+    <div class="plane">✈️</div>
+    <div>
+      <div class="headline">${headline}</div>
+      <div class="chips">
+        <span class="chip c1">✈️ ${s.flights} flight${s.flights === 1 ? '' : 's'}</span>
+        <span class="chip c2">☁️ ${fmtDur(s.totalMin)} in the clouds</span>
+        <span class="chip c3">🏙️ ${s.cities.length} cit${s.cities.length === 1 ? 'y' : 'ies'}</span>
+        <span class="chip c4">🌍 ${s.countries.length} countr${s.countries.length === 1 ? 'y' : 'ies'}</span>
+        <span class="chip c5">🏅 ${s.badges.filter(b => b.earned).length} sticker${s.badges.filter(b => b.earned).length === 1 ? '' : 's'}</span>
+      </div>
+    </div>
+    ${life ? `<div class="age">${name} is ${formatAge(life.ageNow)} old${s.firsts ? ` and first flew when he was just ${formatAge(s.firsts.flight.age)} old` : ''}.</div>` : ''}`;
 }
 
 // --- map --------------------------------------------------------------------
 function buildMap() {
   if (mapBuilt) return;
   mapBuilt = true;
-  map = L.map('map', { worldCopyJump: true, minZoom: 1, maxZoom: 10, zoomSnap: 0.25, attributionControl: false });
+  map = L.map('map-canvas', { worldCopyJump: true, minZoom: 1, maxZoom: 10, zoomSnap: 0.25, attributionControl: false });
   const css = getComputedStyle(document.documentElement);
   const landFill = css.getPropertyValue('--land').trim(), landLine = css.getPropertyValue('--land-line').trim();
   const world = L.geoJSON(WORLD, { style: { color: landLine, weight: 0.6, fillColor: landFill, fillOpacity: 1, interactive: false } }).addTo(map);
@@ -84,7 +95,7 @@ function buildMap() {
   const pinLayer = L.layerGroup().addTo(map);
   const routeColor = getComputedStyle(document.documentElement).getPropertyValue('--series-1').trim();
   const activeColor = getComputedStyle(document.documentElement).getPropertyValue('--series-2').trim();
-  const pinFill = getComputedStyle(document.documentElement).getPropertyValue('--seq-450').trim();
+  const pinFill = getComputedStyle(document.documentElement).getPropertyValue('--pin').trim();
 
   function drawAll() {
     arcLayer.clearLayers(); pinLayer.clearLayers();
@@ -161,38 +172,38 @@ function buildMap() {
 }
 
 // --- stats ------------------------------------------------------------------
-function tile(label, value, unit = '', note = '') {
-  return `<div class="tile"><div class="label">${label}</div><div class="value">${value}${unit ? `<small>${unit}</small>` : ''}</div>${note ? `<div class="note">${note}</div>` : ''}</div>`;
+function tile(label, value, unit = '', note = '', em = '') {
+  return `<div class="tile"><div class="label">${em ? `<span class="em">${em}</span>` : ''}${label}</div><div class="value">${value}${unit ? `<small>${unit}</small>` : ''}</div>${note ? `<div class="note">${note}</div>` : ''}</div>`;
 }
 function renderStats() {
   const s = STATS, c = s.comparisons;
   $('#totals').innerHTML = [
-    tile('Flights', s.flights),
-    tile('Distance', fmtInt(s.totalKm), 'km'),
-    tile('Time in the air', fmtDur(s.totalMin)),
-    tile('Countries', s.countries.length),
-    tile('Cities', s.cities.length),
-    tile('Airports', s.airports.length),
-    tile('Airlines', s.airlines.length),
-    tile('Aircraft types', s.aircraft.length),
-    tile('Continents', s.continentsVisited.length, '', s.continentsVisited.join(', ')),
+    tile('Times up in the sky', s.flights, '', '', '✈️'),
+    tile('Kilometres zoomed', fmtInt(s.totalKm), 'km', '', '📏'),
+    tile('Time in the clouds', fmtDur(s.totalMin), '', '', '☁️'),
+    tile('Countries explored', s.countries.length, '', '', '🌍'),
+    tile('Cities visited', s.cities.length, '', '', '🏙️'),
+    tile('Airports', s.airports.length, '', '', '🛫'),
+    tile('Airlines', s.airlines.length, '', '', '🎫'),
+    tile('Kinds of plane', s.aircraft.length, '', '', '🛩️'),
+    tile('Continents', s.continentsVisited.length, '', s.continentsVisited.join(', '), '🗺️'),
   ].join('');
   const melSyd = Math.round(s.totalKm / 705);
   $('#comparisons').innerHTML = [
-    tile('Times around the Earth', fmt1(c.aroundEarth), '×', `${fmtInt(EARTH_CIRCUMFERENCE_KM)} km around the equator`),
-    tile('Of the way to the Moon', fmt1(c.toMoon * 100), '%', `${fmtInt(MOON_DISTANCE_KM)} km away`),
-    tile('Melbourne–Sydney hops', fmtInt(melSyd), '×', 'if all of it were 705 km hops'),
-    tile('Full days in the sky', fmt1(c.daysInSky), '', `${fmt1(c.hoursInSky)} hours total`),
-    tile('Average flight', fmtInt(s.flights ? s.totalKm / s.flights : 0), 'km', s.flights ? fmtDur(Math.round(s.totalMin / s.flights)) + ' average' : ''),
+    tile('Laps around the whole Earth', fmt1(c.aroundEarth), '×', `the Earth is ${fmtInt(EARTH_CIRCUMFERENCE_KM)} km around its middle`, '🌏'),
+    tile('Of the way to the Moon', fmt1(c.toMoon * 100), '%', `the Moon is ${fmtInt(MOON_DISTANCE_KM)} km away`, '🌙'),
+    tile('Hops from Melbourne to Sydney', fmtInt(melSyd), '×', 'each hop is 705 km', '🦘'),
+    tile('Whole days up in the sky', fmt1(c.daysInSky), '', `${fmt1(c.hoursInSky)} hours all together`, '🌞'),
+    tile('A normal flight for Vincent', fmtInt(s.flights ? s.totalKm / s.flights : 0), 'km', s.flights ? 'about ' + fmtDur(Math.round(s.totalMin / s.flights)) + ' long' : '', '🧸'),
   ].join('');
   if (s.life) {
     const l = s.life;
     $('#agestats').innerHTML = [
-      tile('Age at first flight', l.ageAtFirstFlight ? formatAge(l.ageAtFirstFlight) : '—', '', l.ageAtFirstFlight ? `${l.daysOldAtFirstFlight} days old` : 'No flights yet'),
-      tile('Of his life spent airborne', l.pctAirborne < 0.1 ? l.pctAirborne.toFixed(3) : fmt1(l.pctAirborne), '%'),
-      tile('Km per month of life', fmtInt(l.kmPerMonth), 'km'),
-      tile('Flights per month of life', fmt1(l.flightsPerMonth)),
-      tile('Age now', formatAge(l.ageNow), '', `${fmtInt(l.ageNow.totalDays)} days`),
+      tile('How old on his first flight', l.ageAtFirstFlight ? formatAge(l.ageAtFirstFlight) : '—', '', l.ageAtFirstFlight ? `only ${l.daysOldAtFirstFlight} days old!` : 'No flights yet', '🍼'),
+      tile('Of his whole life spent flying', l.pctAirborne < 0.1 ? l.pctAirborne.toFixed(3) : fmt1(l.pctAirborne), '%', '', '⏳'),
+      tile('Kilometres for every month alive', fmtInt(l.kmPerMonth), 'km', '', '📈'),
+      tile('Flights for every month alive', fmt1(l.flightsPerMonth), '', '', '🎈'),
+      tile('How old he is today', formatAge(l.ageNow), '', `that's ${fmtInt(l.ageNow.totalDays)} days`, '🎂'),
     ].join('');
   } else {
     $('#agestats').innerHTML = `<p class="empty">Set <code>birthdate</code> in flights.json for age stats.</p>`;
@@ -200,21 +211,21 @@ function renderStats() {
   const f = s.firsts;
   const firstCard = (icon, what, fl, detailFn) => fl
     ? `<div class="first"><div class="icon">${icon}</div><div class="what">${what}</div><div class="detail">${detailFn(fl)}</div><div class="when">${fmtDateLong(fl.date)}${fl.age ? ` · aged ${formatAge(fl.age)}` : ''}</div></div>`
-    : `<div class="first pending"><div class="icon">${icon}</div><div class="what">${what}</div><div class="detail">Not yet</div><div class="when">Still to come</div></div>`;
+    : `<div class="first pending"><div class="icon">${icon}</div><div class="what">${what}</div><div class="detail">Not yet!</div><div class="when">One day…</div></div>`;
   const route = fl => `${esc(fl.fromAp.c)} → ${esc(fl.toAp.c)} <span class="dim">(${esc(fl.flight || fl.from + '–' + fl.to)})</span>`;
   const listCard = (icon, what, items) => `<div class="first"><div class="icon">${icon}</div><div class="what">${what}</div><div class="detail"><ul>${items.map(x => `<li>${esc(x.name)} <span class="when">· ${fmtDate(x.date)}</span></li>`).join('') || '<li>Not yet</li>'}</ul></div><div></div></div>`;
-  $('#firsts').innerHTML = !f ? '<p class="empty">No flights yet.</p>' : [
-    firstCard('🛫', 'First flight', f.flight, route),
-    firstCard('🛂', 'First international flight', f.international, route),
-    firstCard('🌙', 'First overnight flight', f.overnight, route),
-    firstCard('🛩️', 'First long-haul (8h+)', f.longHaul, route),
-    firstCard('📏', 'Longest flight', f.longest, fl => `${route(fl)} · ${fmtInt(fl.km)} km, ${fmtDur(fl.durationMin)}`),
-    firstCard('🩳', 'Shortest flight', f.shortest, fl => `${route(fl)} · ${fmtInt(fl.km)} km, ${fmtDur(fl.durationMin)}`),
-    firstCard('🌞', 'First equator crossing', f.equator, route),
-    firstCard('🕰️', 'First date-line crossing', f.dateLine, route),
-    firstCard('🎂', 'First birthday flight', f.birthday, route),
-    listCard('🛬', 'First time on each aircraft', f.aircraft.map(a => ({ name: a.name, date: a.flight.date }))),
-    listCard('🎫', 'First time with each airline', f.airlines.map(a => ({ name: a.name, date: a.flight.date }))),
+  $('#firsts').innerHTML = !f ? '<p class="empty">No flights yet. The sky is waiting!</p>' : [
+    firstCard('🛫', 'Very first flight', f.flight, route),
+    firstCard('🛂', 'First trip to another country', f.international, route),
+    firstCard('🌙', 'First flight through the night', f.overnight, route),
+    firstCard('🛩️', 'First really long flight (8h+)', f.longHaul, route),
+    firstCard('📏', 'Longest flight ever', f.longest, fl => `${route(fl)} · ${fmtInt(fl.km)} km, ${fmtDur(fl.durationMin)}`),
+    firstCard('🐜', 'Shortest flight ever', f.shortest, fl => `${route(fl)} · ${fmtInt(fl.km)} km, ${fmtDur(fl.durationMin)}`),
+    firstCard('🌞', 'First time over the equator', f.equator, route),
+    firstCard('🕰️', 'First time across the date line', f.dateLine, route),
+    firstCard('🎂', 'First flight on his birthday', f.birthday, route),
+    listCard('🛬', 'First go on each kind of plane', f.aircraft.map(a => ({ name: a.name, date: a.flight.date }))),
+    listCard('🎫', 'First go with each airline', f.airlines.map(a => ({ name: a.name, date: a.flight.date }))),
     listCard('🌐', 'First time on each continent', f.continents),
   ].join('');
   $('#airlines').innerHTML = s.airlines.map(a => `<li><span>${esc(a.key)}</span><span>${a.count}</span></li>`).join('') || '<li>—</li>';
@@ -231,40 +242,42 @@ function renderLogbook() {
     <td>${fmtDate(f.date)}</td>
     <td class="route"><b>${esc(f.from)} → ${esc(f.to)}</b><span class="dim">${esc(f.fromAp.c)} to ${esc(f.toAp.c)}</span></td>
     <td>${esc(f.flight || '')}</td>
-    <td>${esc(f.airline || '')}<span class="dim" style="display:block;font-size:.78rem">${esc(f.aircraft || '')}</span></td>
+    <td>${esc(f.airline || '')}<span class="small">${esc(f.aircraft || '')}</span></td>
     <td class="num">${f.dep_time ? esc(f.dep_time) + '–' + esc(f.arr_time) : '<span class="est">—</span>'}${f.overnight ? '<span class="tag">overnight</span>' : ''}</td>
     <td class="num">${fmtInt(f.km)}</td>
     <td class="num">${fmtDur(f.durationMin)}${f.durationEstimated ? '<span class="tag" title="Estimated from distance">est</span>' : ''}</td>
     <td>${f.age ? formatAge(f.age, true) : ''}</td>
     <td>${esc(f.seat || '')}</td>
   </tr>`).join('');
-  $('#logbook').innerHTML = `<thead><tr><th>#</th><th>Date</th><th>Route</th><th>Flight</th><th>Airline / aircraft</th><th class="num">Times</th><th class="num">km</th><th class="num">Duration</th><th>Age</th><th>Seat</th></tr></thead>
-    <tbody>${rows || '<tr><td colspan="10" class="empty">No flights logged yet.</td></tr>'}</tbody>
-    <tfoot><tr class="total"><td></td><td colspan="5">Totals · ${FLIGHTS.length} flights</td><td class="num">${fmtInt(STATS.totalKm)}</td><td class="num">${fmtDur(STATS.totalMin)}</td><td colspan="2"></td></tr></tfoot>`;
+  $('#logbook-table').innerHTML = `<thead><tr><th>#</th><th>When</th><th>Where</th><th>Flight</th><th>Airline &amp; plane</th><th class="num">Times</th><th class="num">km</th><th class="num">How long</th><th>How old</th><th>Seat</th></tr></thead>
+    <tbody>${rows || '<tr><td colspan="10" class="empty">Nothing in the logbook yet!</td></tr>'}</tbody>
+    <tfoot><tr class="total"><td></td><td colspan="5">All together · ${FLIGHTS.length} flight${FLIGHTS.length === 1 ? '' : 's'}</td><td class="num">${fmtInt(STATS.totalKm)}</td><td class="num">${fmtDur(STATS.totalMin)}</td><td colspan="2"></td></tr></tfoot>`;
 }
 
 // --- passport ---------------------------------------------------------------
 function renderPassport() {
   const hash = s => [...s].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7);
-  $('#passport').innerHTML = STATS.countries.map((c, i) => {
+  $('#passport-stamps').innerHTML = STATS.countries.map((c, i) => {
     const rot = (hash(c.name) % 13) - 6;
-    const alt = i % 3 === 1;
-    return `<div class="stamp${alt ? ' alt' : ''}" style="--rot:${rot}deg">
+    return `<div class="stamp" style="--rot:${rot}deg">
       <div class="visits">${c.visits}× </div>
       <div class="country">${esc(c.name)}</div>
       <div><div class="entered">First entered</div><div class="date">${fmtDate(c.first)}</div></div>
       <div class="cities">${c.cities.map(esc).join(' · ')}</div>
     </div>`;
-  }).join('') || '<p class="empty">No stamps yet.</p>';
+  }).join('') || '<p class="empty">No stamps yet. Pack the passport!</p>';
 }
 
 // --- trips ------------------------------------------------------------------
 function renderTrips() {
-  $('#trips').innerHTML = [...TRIPS].reverse().map(t => {
+  $('#trips-list').innerHTML = [...TRIPS].reverse().map(t => {
     const age = DATA.birthdate ? ageAt(DATA.birthdate, t.start) : null;
     const dates = t.start === t.end ? fmtDateLong(t.start) : `${fmtDate(t.start)} – ${fmtDate(t.end)}`;
     const photos = (t.meta.photos || []).map(p => `<img src="${esc(p)}" alt="" loading="lazy">`).join('');
+    const ems = ['🏖️', '🎢', '🏔️', '🦘', '🐠', '🎈', '🚂', '🍦'];
+    const em = ems[[...t.name].reduce((h, ch) => h + ch.charCodeAt(0), 0) % ems.length];
     return `<article class="trip">
+      <div class="em">${em}</div>
       <h3>${esc(t.name)}</h3>
       <div class="dates">${dates} · ${esc(t.places.filter(p => p !== t.flights[0].fromAp.c).join(', ') || t.places.join(', '))}</div>
       ${age ? `<div class="age">${DATA.name} was ${formatAge(age)} old</div>` : ''}
@@ -273,18 +286,18 @@ function renderTrips() {
       <div class="legs">${t.flights.map(f => `<span class="leg"><b>${esc(f.from)}→${esc(f.to)}</b> ${fmtDate(f.date)}${f.flight ? ' · ' + esc(f.flight) : ''}</span>`).join('')}</div>
       ${photos ? `<div class="photos">${photos}</div>` : ''}
     </article>`;
-  }).join('') || '<p class="empty">No trips yet.</p>';
+  }).join('') || '<p class="empty">No adventures yet. Where to first?</p>';
 }
 
 // --- badges -----------------------------------------------------------------
 function renderBadges() {
   const sorted = [...STATS.badges].sort((a, b) => (b.earned - a.earned) || (a.date || '').localeCompare(b.date || ''));
   const prog = b => b.unit === 'km' ? `${fmtInt(b.progress)} / ${fmtInt(b.target)} km` : b.unit === 'min' ? `${fmtDur(b.progress)} / ${fmtDur(b.target)}` : `${b.progress} / ${b.target}`;
-  $('#badges').innerHTML = sorted.map(b => `<div class="badge${b.earned ? '' : ' locked'}">
+  $('#badges-grid').innerHTML = sorted.map(b => `<div class="badge${b.earned ? '' : ' locked'}">
     <div class="icon">${b.icon}</div>
     <div class="name">${esc(b.name)}</div>
     <div class="desc">${esc(b.desc)}</div>
-    ${b.earned ? `<div class="date">Earned ${fmtDate(b.date)}</div>` : `<div class="meter"><i style="width:${Math.round(b.progress / b.target * 100)}%"></i></div><div class="progress">${prog(b)}</div>`}
+    ${b.earned ? `<div class="date">Got it ${fmtDate(b.date)}!</div>` : `<div class="meter"><i style="width:${Math.round(b.progress / b.target * 100)}%"></i></div><div class="progress">${prog(b)}</div>`}
   </div>`).join('');
 }
 
