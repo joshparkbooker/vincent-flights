@@ -72,14 +72,18 @@ function computeUpcoming() {
     const route = u.route || [], car = u.by === 'car';
     const planned = route.slice(1).map((to, i) => ({ from: route[i], to, trip: u.name, date: i > 0 && i === route.length - 2 && u.end ? u.end : u.start }));
     // pretend the trip has happened and see what changes: new places, countries and stickers
-    const sim = { ...DATA, flights: [...DATA.flights, ...(car ? [] : planned)], drives: [...(DATA.drives || []), ...(car ? planned : [])] };
+    // stops: places visited along the way without a flight or drive of their own, e.g. { name, country, place? }
+    const stops = (u.stops || []).map(st => typeof st === 'string' ? { name: st } : st);
+    const sim = { ...DATA, flights: [...DATA.flights, ...(car ? [] : planned)], drives: [...(DATA.drives || []), ...(car ? planned : [])],
+      trips: { ...(DATA.trips || {}), [u.name]: { ...(DATA.trips?.[u.name] || {}), stops } } };
     const F = enrichFlights(sim, AIRPORTS), D = enrichDrives(sim, AIRPORTS), S = computeStats(sim, F, D);
     const legs = car ? D.filter(d => d.idx >= (DATA.drives || []).length) : F.filter(f => f.idx >= DATA.flights.length);
     const had = (list, c) => list.some(x => x.name === c.name && (x.country ?? '') === (c.country ?? ''));
     const nameOf = (l, end) => car ? l[end + 'Pl'].name : l[end + 'Ap'].c;
     const stopsAt = legs.length ? [nameOf(legs[0], 'from'), ...legs.map(l => nameOf(l, 'to'))] : [];
     return {
-      ...u, car, legs, today,
+      ...u, car, legs, today, stops,
+      stopPins: stops.map(st => ({ name: st.name, ...(DATA.places?.[st.place || st.name] || {}) })).filter(p => p.lat != null),
       sleeps: daysBetween(today, u.start),
       underway: u.start <= today,
       day: daysBetween(u.start, today) + 1, days: daysBetween(u.start, u.end || u.start) + 1,
@@ -107,6 +111,7 @@ function upcomingCard(u, first) {
       <div class="next-kicker">${u.underway ? 'Happening right now' : first ? 'Next adventure' : 'After that'}</div>
       <h3>${u.emoji ? u.emoji + ' ' : ''}${esc(u.name)}</h3>
       <div class="next-sub">${dates}${u.routeNames.length ? ` · ${u.car ? '🚗' : '✈️'} ${u.routeNames.map(esc).join(' → ')}` : ''}${u.km ? ` · about ${fmtInt(u.km)} km` : ''}</div>
+      ${u.stops.length ? `<div class="next-sub">📍 Stopping at ${u.stops.map(st => esc(st.name)).join(', ')}</div>` : ''}
       ${u.notes ? `<p class="notes">${esc(u.notes)}</p>` : ''}
       ${extras.length ? `<div class="next-unlocks">${extras.map(x => `<span>${x}</span>`).join('')}</div>` : ''}
       ${crewRow(u.with)}
@@ -175,11 +180,13 @@ function buildMap() {
     const flown = flownCodes();
     for (const p of STATS.road.places) if (!flown.has(p.airport)) pinLayer.addLayer(placePin(p));
     // adventures still to come: faint dashed lines and hollow dots
-    for (const u of UPCOMING) for (const l of u.legs) {
+    for (const u of UPCOMING) for (const l of [...u.legs, ...u.stopPins.map(p => ({ stop: p }))]) {
       const tip = `<b>${u.emoji || '🧳'} Coming up: ${esc(u.name)}</b>${u.underway ? 'Happening right now' : `${u.sleeps} sleep${u.sleeps === 1 ? '' : 's'} to go`}<br><span class="dim">${fmtDate(u.start)}${u.end && u.end !== u.start ? ' – ' + fmtDate(u.end) : ''}</span>`;
-      const copies = [0, -360, 360].map(dx => l.points.map(([la, lo]) => [la, lo + dx]));
-      arcLayer.addLayer(L.polyline(copies, { color: plannedColor, weight: 2, opacity: 0.9, dashArray: '6 7' }).bindTooltip(tip, { sticky: true, className: 'ap-tip' }));
-      const end = l.kind === 'drive' ? l.toPl : l.toAp;
+      if (!l.stop) {
+        const copies = [0, -360, 360].map(dx => l.points.map(([la, lo]) => [la, lo + dx]));
+        arcLayer.addLayer(L.polyline(copies, { color: plannedColor, weight: 2, opacity: 0.9, dashArray: '6 7' }).bindTooltip(tip, { sticky: true, className: 'ap-tip' }));
+      }
+      const end = l.stop || (l.kind === 'drive' ? l.toPl : l.toAp);
       pinLayer.addLayer(L.featureGroup([0, -360, 360].map(dx => L.circleMarker([end.lat, end.lon + dx], { radius: 5, color: plannedColor, weight: 2, dashArray: '2 3', fillColor: '#fff', fillOpacity: 0.6 }))).bindTooltip(tip, { direction: 'top', offset: [0, -6], className: 'ap-tip' }));
     }
   }

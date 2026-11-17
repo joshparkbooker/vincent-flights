@@ -470,6 +470,11 @@
       "lat": -37.348,
       "lon": 144.143,
       "country": "Australia"
+    },
+    "Nikoi Island": {
+      "lat": 1.02,
+      "lon": 104.68,
+      "country": "Indonesia"
     }
   },
   "drives": [
@@ -512,14 +517,22 @@
   ],
   "upcoming": [
     {
-      "name": "Singapore",
+      "name": "Singapore and Nikoi Island",
       "emoji": "🦁",
       "start": "2027-02-12",
+      "end": "2027-02-22",
       "route": [
         "MEL",
-        "SIN"
+        "SIN",
+        "MEL"
       ],
       "by": "plane",
+      "stops": [
+        {
+          "name": "Nikoi Island",
+          "country": "Indonesia"
+        }
+      ],
       "with": [
         "Mum",
         "Dad"

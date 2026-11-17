@@ -116,6 +116,7 @@ Add trips that haven't happened yet to an `upcoming` array:
     "end": "2026-12-14",            // optional
     "route": ["MEL", "NAN", "MEL"], // airport codes, or names from "places" for a drive
     "by": "plane",                  // or "car"
+    "stops": [{ "name": "Nikoi Island", "country": "Indonesia" }],  // optional side trips; pinned on the map if the name is in "places"
     "with": ["Mum", "Dad"],         // optional
     "notes": "Pool, sand, repeat."  // optional
   }
