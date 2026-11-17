@@ -1,0 +1,12 @@
+{
+  "name": "Vincent's Big Adventures",
+  "short_name": "Vincent",
+  "start_url": "./index.html#map",
+  "display": "standalone",
+  "background_color": "#cfe9ff",
+  "theme_color": "#cfe9ff",
+  "icons": [
+    { "src": "icon-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

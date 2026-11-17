@@ -267,15 +267,15 @@ function renderCrew() {
 function renderLogbook() {
   const rows = FLIGHTS.map(f => `<tr>
     <td class="seq">${f.seq}</td>
-    <td>${fmtDate(f.date)}</td>
+    <td class="date">${fmtDate(f.date)}</td>
     <td class="route"><b>${esc(f.from)} → ${esc(f.to)}</b><span class="dim">${esc(f.fromAp.c)} to ${esc(f.toAp.c)}</span></td>
-    <td>${esc(f.flight || '')}</td>
-    <td>${esc(f.airline || '')}<span class="small">${esc(f.aircraft || '')}</span></td>
-    <td class="num">${f.dep_time ? esc(f.dep_time) + '–' + esc(f.arr_time) : '<span class="est">—</span>'}${f.overnight ? '<span class="tag">overnight</span>' : ''}${f.transit ? '<span class="tag" title="Stayed in the airport">transit</span>' : ''}</td>
-    <td class="num">${fmtInt(f.km)}</td>
-    <td class="num">${fmtDur(f.durationMin)}${f.durationEstimated ? '<span class="tag" title="Estimated from distance">est</span>' : ''}</td>
-    <td>${f.age ? formatAge(f.age, true) : ''}</td>
-    <td>${esc(f.seat || '')}</td>
+    <td data-label="Flight">${esc(f.flight || '')}</td>
+    <td data-label="Airline &amp; plane">${esc(f.airline || '')}<span class="small">${esc(f.aircraft || '')}</span></td>
+    <td class="num" data-label="Times">${f.dep_time ? esc(f.dep_time) + '–' + esc(f.arr_time) : '<span class="est">—</span>'}${f.overnight ? '<span class="tag">overnight</span>' : ''}${f.transit ? '<span class="tag" title="Stayed in the airport">transit</span>' : ''}</td>
+    <td class="num" data-label="km">${fmtInt(f.km)}</td>
+    <td class="num" data-label="How long">${fmtDur(f.durationMin)}${f.durationEstimated ? '<span class="tag" title="Estimated from distance">est</span>' : ''}</td>
+    <td data-label="How old">${f.age ? formatAge(f.age, true) : ''}</td>
+    <td data-label="Seat" class="${f.seat ? '' : 'none'}">${esc(f.seat || '')}</td>
   </tr>`).join('');
   $('#logbook-table').innerHTML = `<thead><tr><th>#</th><th>When</th><th>Where</th><th>Flight</th><th>Airline &amp; plane</th><th class="num">Times</th><th class="num">km</th><th class="num">How long</th><th>How old</th><th>Seat</th></tr></thead>
     <tbody>${rows || '<tr><td colspan="10" class="empty">Nothing in the logbook yet!</td></tr>'}</tbody>
@@ -365,6 +365,14 @@ function openLightbox(plist, title, index) {
     </div>`);
     document.body.appendChild(box);
     box.addEventListener('click', e => { if (e.target === box || e.target.closest('.lb-close')) close(); });
+    let tx = null, ty = null;
+    box.addEventListener('touchstart', e => { tx = e.touches[0].clientX; ty = e.touches[0].clientY; }, { passive: true });
+    box.addEventListener('touchend', e => {
+      if (tx == null) return;
+      const dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty; tx = null;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) show(dx < 0 ? i + 1 : i - 1);
+      else if (dy > 80 && Math.abs(dy) > Math.abs(dx)) close();
+    }, { passive: true });
     box.querySelector('.lb-prev').onclick = () => show(i - 1);
     box.querySelector('.lb-next').onclick = () => show(i + 1);
     addEventListener('keydown', e => {

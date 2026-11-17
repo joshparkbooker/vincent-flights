@@ -2,7 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#cfe9ff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1a3a" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Vincent">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.json">
 <title>Vincent's Big Adventures</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✈️</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,12 +28,12 @@
     </div>
   </div>
   <nav class="tabs" role="tablist">
-    <a href="#map" data-tab="map">🗺️ Map</a>
-    <a href="#stats" data-tab="stats">⭐ Numbers</a>
-    <a href="#logbook" data-tab="logbook">📓 Logbook</a>
-    <a href="#passport" data-tab="passport">🛂 Passport</a>
-    <a href="#trips" data-tab="trips">🎒 Adventures</a>
-    <a href="#badges" data-tab="badges">🏅 Stickers</a>
+    <a href="#map" data-tab="map"><span class="ti">🗺️</span><span class="tl">Map</span></a>
+    <a href="#stats" data-tab="stats"><span class="ti">⭐</span><span class="tl">Numbers</span></a>
+    <a href="#logbook" data-tab="logbook"><span class="ti">📓</span><span class="tl">Logbook</span></a>
+    <a href="#passport" data-tab="passport"><span class="ti">🛂</span><span class="tl">Passport</span></a>
+    <a href="#trips" data-tab="trips"><span class="ti">🎒</span><span class="tl">Adventures</span></a>
+    <a href="#badges" data-tab="badges"><span class="ti">🏅</span><span class="tl">Stickers</span></a>
   </nav>
 </header>
 
@@ -40,7 +47,7 @@
       <span id="replay-status" class="replay-status"></span>
     </div>
     <div id="map-canvas"></div>
-    <p class="hint">Every line is a flight. The dots get bigger each time he lands somewhere. Hover for the story.</p>
+    <p class="hint">Every line is a flight. The dots get bigger each time he lands somewhere. Tap or hover for the story.</p>
   </section>
 
   <section id="tab-stats" class="tab" hidden>
