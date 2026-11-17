@@ -331,6 +331,53 @@
             "Mum",
             "Dad",
             "Uncle Charles"
+          ],
+          "photos": [
+            {
+              "src": "photos/around-the-world/boulder/img-6721-316b2768.jpg",
+              "thumb": "photos/around-the-world/boulder/img-6721-316b2768-thumb.jpg",
+              "date": "2026-09-15"
+            },
+            {
+              "src": "photos/around-the-world/boulder/img-4620-d8646c06.jpg",
+              "thumb": "photos/around-the-world/boulder/img-4620-d8646c06-thumb.jpg",
+              "date": "2026-09-16"
+            },
+            {
+              "src": "photos/around-the-world/boulder/img-4625-8ef7ea82.jpg",
+              "thumb": "photos/around-the-world/boulder/img-4625-8ef7ea82-thumb.jpg",
+              "date": "2026-09-16"
+            },
+            {
+              "src": "photos/around-the-world/boulder/img-6730-74d47b09.jpg",
+              "thumb": "photos/around-the-world/boulder/img-6730-74d47b09-thumb.jpg",
+              "date": "2026-09-16"
+            },
+            {
+              "src": "photos/around-the-world/boulder/img-6739-cbb2ac58.jpg",
+              "thumb": "photos/around-the-world/boulder/img-6739-cbb2ac58-thumb.jpg",
+              "date": "2026-09-16"
+            },
+            {
+              "src": "photos/around-the-world/boulder/img-6743-f47e4165.jpg",
+              "thumb": "photos/around-the-world/boulder/img-6743-f47e4165-thumb.jpg",
+              "date": "2026-09-16"
+            },
+            {
+              "src": "photos/around-the-world/boulder/img-6751-2f81814e.jpg",
+              "thumb": "photos/around-the-world/boulder/img-6751-2f81814e-thumb.jpg",
+              "date": "2026-09-16"
+            },
+            {
+              "src": "photos/around-the-world/boulder/img-6759-2eb8c210.jpg",
+              "thumb": "photos/around-the-world/boulder/img-6759-2eb8c210-thumb.jpg",
+              "date": "2026-09-16"
+            },
+            {
+              "src": "photos/around-the-world/boulder/img-6771-f7fcd9b6.jpg",
+              "thumb": "photos/around-the-world/boulder/img-6771-f7fcd9b6-thumb.jpg",
+              "date": "2026-09-16"
+            }
           ]
         },
         {
