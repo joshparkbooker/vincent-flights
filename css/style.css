@@ -21,6 +21,7 @@
   --series-1: #ff6f61;   /* arcs */
   --series-2: #ffb400;   /* active arc */
   --pin: #ff6f61;
+  --road: #2f8f6b;       /* road trips: dotted lines and pins */
   --ocean: #bfe3ff;
   --land: #e9f7d9;
   --land-line: #b9d9a3;
@@ -53,6 +54,7 @@
     --series-1: #ff8a7e;
     --series-2: #ffcc4d;
     --pin: #ff8a7e;
+    --road: #7ed9b2;
     --ocean: #16244a;
     --land: #2b3f63;
     --land-line: #4b6390;
@@ -136,7 +138,7 @@ footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: .5
 .hero .headline b { color: var(--coral); font-size: 1.25em; }
 .hero .chips { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .4rem; }
 .chip { background: var(--surface-1); border-radius: 999px; padding: .3rem .75rem; font-weight: 800; font-size: .85rem; box-shadow: var(--shadow); }
-.chip.c1 { background: var(--p1); } .chip.c2 { background: var(--p2); } .chip.c3 { background: var(--p3); } .chip.c4 { background: var(--p4); } .chip.c5 { background: var(--p5); }
+.chip.c1 { background: var(--p1); } .chip.c2 { background: var(--p2); } .chip.c3 { background: var(--p3); } .chip.c4 { background: var(--p4); } .chip.c5 { background: var(--p5); } .chip.c6 { background: var(--p6); }
 .hero .age { grid-column: 2; color: var(--text-secondary); font-weight: 700; }
 
 /* stat tiles */
@@ -238,6 +240,7 @@ table.logbook .small { color: var(--text-secondary); font-size: .78rem; display:
 .trip .legs { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .4rem; }
 .trip .leg { font-size: .82rem; padding: .3rem .7rem; border-radius: 999px; background: var(--p1); color: var(--text-secondary); font-weight: 700; }
 .trip .leg b { color: var(--text-primary); font-weight: 900; }
+.trip .leg.road { background: var(--p3); }
 .trip .photos { grid-column: 1 / -1; display: flex; gap: .6rem; flex-wrap: wrap; align-items: center; margin-top: .7rem; }
 .trip .photo { padding: 0; border: 0; background: none; cursor: pointer; border-radius: 14px; transition: transform .15s; transform: rotate(var(--tilt, -2deg)); }
 .trip .photo:nth-child(2n) { --tilt: 2deg; } .trip .photo:nth-child(3n) { --tilt: -1deg; }

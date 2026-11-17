@@ -77,6 +77,32 @@ python3 scripts/add_photos.py "Japan" --stop "Kyoto" inbox/
 
 Photos can also be hand-edited in the JSON as `{"src": "...", "thumb": "...", "caption": "...", "date": "YYYY-MM-DD"}` or a plain URL string.
 
+## Road trips
+
+Drives live in a `drives` array next to `flights`, and the towns they touch live in `places` (an airport code works as a place too, for a drive that starts at the airport):
+
+```json
+"places": {
+  "Melbourne": { "lat": -37.8136, "lon": 144.9631, "country": "Australia" },
+  "Lorne":     { "lat": -38.541,  "lon": 143.975,  "country": "Australia" }
+},
+"drives": [
+  {
+    "date": "2026-10-17",
+    "from": "Melbourne",
+    "to": "Lorne",
+    "via": ["Torquay"],            // optional waypoints, only shape the line on the map
+    "km": 142,                     // optional road distance; otherwise straight-line x 1.3, marked "est"
+    "duration_min": 125,           // optional; otherwise estimated at 75 km/h, marked "est"
+    "trip": "Great Ocean Road",    // optional, same trip names as flights, so a trip can mix both
+    "vehicle": "Family car",       // optional
+    "notes": "First beach nap"     // optional
+  }
+]
+```
+
+Drives show as dotted lines on the map (and in the replay), get their own logbook table, an "On the road" block on the Numbers tab and a few stickers. Where a drive ends counts as a place visited. Flight totals stay flight-only.
+
 ## Local preview
 
 ```

@@ -1,4 +1,4 @@
-import { enrichFlights, computeStats, groupTrips, formatAge, ageAt, computeCrew, normPerson } from './stats.js';
+import { enrichFlights, enrichDrives, mergeLegs, computeStats, groupTrips, formatAge, ageAt, computeCrew, normPerson } from './stats.js';
 import { EARTH_CIRCUMFERENCE_KM, MOON_DISTANCE_KM } from './geo.js';
 
 const $ = sel => document.querySelector(sel);
@@ -10,7 +10,7 @@ const fmtDur = m => { const h = Math.floor(m / 60), mm = m % 60; return h ? `${h
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const el = (html) => { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstElementChild; };
 
-let DATA, FLIGHTS, STATS, TRIPS, CREW, WORLD, AIRPORTS, map, mapBuilt = false;
+let DATA, FLIGHTS, DRIVES, LEGS, STATS, TRIPS, CREW, WORLD, AIRPORTS, map, mapBuilt = false;
 const airportsLon = code => AIRPORTS?.[code]?.lon;
 
 async function main() {
@@ -23,8 +23,10 @@ async function main() {
     WORLD = world; AIRPORTS = airports;
     DATA = data;
     FLIGHTS = enrichFlights(data, airports);
-    STATS = computeStats(data, FLIGHTS);
-    TRIPS = groupTrips(FLIGHTS, data.trips || {});
+    DRIVES = enrichDrives(data, airports);
+    LEGS = mergeLegs(FLIGHTS, DRIVES);
+    STATS = computeStats(data, FLIGHTS, DRIVES);
+    TRIPS = groupTrips(FLIGHTS, data.trips || {}, DRIVES);
     CREW = computeCrew(TRIPS);
   } catch (e) {
     $('main').prepend(el(`<div class="error">Could not load flight data: ${esc(e.message)}</div>`));
@@ -37,10 +39,12 @@ async function main() {
   renderStats();
   renderCrew();
   renderLogbook();
+  renderRoadbook();
+  renderRoadStats();
   renderPassport();
   renderTrips();
   renderBadges();
-  $('#datanote').textContent = `${FLIGHTS.length} flights on record · last updated ${FLIGHTS.length ? fmtDate(FLIGHTS[FLIGHTS.length - 1].date) : '—'}`;
+  $('#datanote').textContent = `${FLIGHTS.length} flights${DRIVES.length ? ` and ${DRIVES.length} drive${DRIVES.length === 1 ? '' : 's'}` : ''} on record · last updated ${LEGS.length ? fmtDate(LEGS[LEGS.length - 1].date) : '—'}`;
   setupTabs();
 }
 
@@ -69,6 +73,7 @@ function renderHero() {
       <div class="chips">
         <span class="chip c1">✈️ ${s.flights} flight${s.flights === 1 ? '' : 's'}</span>
         <span class="chip c2">☁️ ${fmtDur(s.totalMin)} in the clouds</span>
+        ${s.road.drives ? `<span class="chip c6">🚗 ${fmtInt(s.road.km)} km by road</span>` : ''}
         <span class="chip c3">🏙️ ${s.cities.length} place${s.cities.length === 1 ? '' : 's'}</span>
         <span class="chip c4">🌍 ${s.countries.length} countr${s.countries.length === 1 ? 'y' : 'ies'}</span>
         <span class="chip c5">🏅 ${s.badges.filter(b => b.earned).length} sticker${s.badges.filter(b => b.earned).length === 1 ? '' : 's'}</span>
@@ -99,11 +104,32 @@ function buildMap() {
   const routeColor = getComputedStyle(document.documentElement).getPropertyValue('--series-1').trim();
   const activeColor = getComputedStyle(document.documentElement).getPropertyValue('--series-2').trim();
   const pinFill = getComputedStyle(document.documentElement).getPropertyValue('--pin').trim();
+  const roadColor = getComputedStyle(document.documentElement).getPropertyValue('--road').trim();
+  const roadName = d => `${d.fromPl.name} → ${d.toPl.name}`;
+  const flownCodes = () => new Set(STATS.airports.map(a => a.code));
 
   function drawAll() {
     arcLayer.clearLayers(); pinLayer.clearLayers();
     for (const f of FLIGHTS) arcLayer.addLayer(arcFor(f, routeColor, 0.55));
+    for (const d of DRIVES) arcLayer.addLayer(roadFor(d, 0.9));
     for (const a of STATS.airports) pinLayer.addLayer(pinFor(a));
+    const flown = flownCodes();
+    for (const p of STATS.road.places) if (!flown.has(p.airport)) pinLayer.addLayer(placePin(p));
+  }
+  // drives: dotted line in the road colour, so they read differently from flight arcs
+  function roadFor(d, opacity) {
+    const copies = [0, -360, 360].map(dx => d.points.map(([la, lo]) => [la, lo + dx]));
+    const line = L.polyline(copies, { color: roadColor, weight: 3, opacity, dashArray: '1 7', lineCap: 'round', smoothFactor: 0.5 });
+    line.bindTooltip(`<b>🚗 ${esc(roadName(d))}</b>${fmtDateLong(d.date)}${d.viaPl.length ? `<br>via ${d.viaPl.map(p => esc(p.name)).join(', ')}` : ''}<br><span class="dim">${d.kmEstimated ? 'about ' : ''}${fmtInt(d.km)} km · ${d.durationEstimated ? 'about ' : ''}${fmtDur(d.durationMin)}${d.age ? ' · aged ' + formatAge(d.age, true) : ''}</span>`, { sticky: true, className: 'ap-tip' });
+    return line;
+  }
+  function placePin(p, visits = p.visits, dates = p.dates) {
+    const m = L.featureGroup([0, -360, 360].map(dx => L.circleMarker([p.lat, p.lon + dx], {
+      radius: 4 + 1.6 * Math.sqrt(visits), color: '#fff', weight: 2, fillColor: roadColor, fillOpacity: 0.95,
+    })));
+    const uniq = [...new Set(dates)].sort();
+    m.bindTooltip(`<b>🚗 ${esc(p.name)}</b>${esc(p.country)}<br><span class="dim">${uniq.map(fmtDate).join(', ')}</span>`, { direction: 'top', offset: [0, -6], className: 'ap-tip' });
+    return m;
   }
   function arcFor(f, color, opacity) {
     // draw on the centre copy and both neighbours so arcs crossing the antimeridian always read whole
@@ -121,11 +147,14 @@ function buildMap() {
     return m;
   }
   function fitAll() {
-    if (!FLIGHTS.length) { map.setView([-25, 134], 3); return; }
+    if (!LEGS.length) { map.setView([-25, 134], 3); return; }
     // centre the world on home: shift every airport into the 360° window around the home longitude
-    const homeLon = airportsLon(DATA.home) ?? FLIGHTS[0].fromAp.lon;
+    const homeLon = airportsLon(DATA.home) ?? LEGS[0].points[0][1];
     const shift = lon => { let x = lon; while (x < homeLon - 180) x += 360; while (x >= homeLon + 180) x -= 360; return x; };
-    const b = L.latLngBounds(FLIGHTS.flatMap(f => [[f.fromAp.lat, shift(f.fromAp.lon)], [f.toAp.lat, shift(f.toAp.lon)]]));
+    const b = L.latLngBounds([
+      ...FLIGHTS.flatMap(f => [[f.fromAp.lat, shift(f.fromAp.lon)], [f.toAp.lat, shift(f.toAp.lon)]]),
+      ...DRIVES.flatMap(d => d.stops.map(p => [p.lat, shift(p.lon)])),
+    ]);
     map.fitBounds(b, { padding: [40, 40], maxZoom: 5 });
   }
   drawAll(); fitAll();
@@ -134,12 +163,13 @@ function buildMap() {
   let playing = false, raf = null;
   const status = $('#replay-status');
   $('#replay').onclick = () => {
-    if (playing || !FLIGHTS.length) return;
+    if (playing || !LEGS.length) return;
     playing = true; $('#replay').hidden = true; $('#replay-stop').hidden = false;
     arcLayer.clearLayers(); pinLayer.clearLayers();
     const visits = new Map();
     let i = 0;
-    const perArc = Math.max(350, Math.min(1400, 12000 / FLIGHTS.length));
+    const perArc = Math.max(350, Math.min(1400, 12000 / LEGS.length));
+    const flown = flownCodes(), placeSeen = new Map();
     const addPin = (code, ap, when) => {
       const e = visits.get(code) || { code, ap, visits: 0, dates: [], marker: null };
       e.visits++; e.dates.push(when);
@@ -147,12 +177,22 @@ function buildMap() {
       e.marker = pinFor(e, e.visits, e.dates); pinLayer.addLayer(e.marker);
       visits.set(code, e);
     };
+    const addPlace = (pl, when) => {
+      if (flown.has(pl.airport)) return;
+      const e = placeSeen.get(pl.name) || { ...pl, visits: 0, dates: [], marker: null };
+      e.visits++; e.dates.push(when);
+      if (e.marker) pinLayer.removeLayer(e.marker);
+      e.marker = placePin(e, e.visits, e.dates); pinLayer.addLayer(e.marker);
+      placeSeen.set(pl.name, e);
+    };
     const step = () => {
       if (!playing) return;
-      if (i >= FLIGHTS.length) { finish(); return; }
-      const f = FLIGHTS[i];
-      status.textContent = `${fmtDateLong(f.date)} · flight ${f.seq} of ${FLIGHTS.length} · ${esc(f.from)} → ${esc(f.to)}${f.age ? ' · aged ' + formatAge(f.age, true) : ''}`;
-      if (i === 0) addPin(f.from, f.fromAp, f.date);
+      if (i >= LEGS.length) { finish(); return; }
+      const f = LEGS[i], drive = f.kind === 'drive';
+      status.textContent = drive
+        ? `${fmtDateLong(f.date)} · 🚗 drive ${f.seq} of ${DRIVES.length} · ${roadName(f)}${f.age ? ' · aged ' + formatAge(f.age, true) : ''}`
+        : `${fmtDateLong(f.date)} · flight ${f.seq} of ${FLIGHTS.length} · ${f.from} → ${f.to}${f.age ? ' · aged ' + formatAge(f.age, true) : ''}`;
+      if (drive) addPlace(f.fromPl, f.date); else if (i === 0) addPin(f.from, f.fromAp, f.date);
       const grow = L.polyline([f.points[0]], { color: activeColor, weight: 3, opacity: 0.95 }).addTo(arcLayer);
       map.panTo(f.points[Math.floor(f.points.length / 2)], { animate: true, duration: perArc / 1000 });
       const t0 = performance.now();
@@ -162,8 +202,9 @@ function buildMap() {
         grow.setLatLngs(f.points.slice(0, Math.max(2, Math.ceil(p * f.points.length))));
         if (p < 1) raf = requestAnimationFrame(frame);
         else {
-          arcLayer.removeLayer(grow); arcLayer.addLayer(arcFor(f, routeColor, 0.55));
-          addPin(f.to, f.toAp, f.arrDate);
+          arcLayer.removeLayer(grow);
+          if (drive) { arcLayer.addLayer(roadFor(f, 0.9)); addPlace(f.toPl, f.arrDate); }
+          else { arcLayer.addLayer(arcFor(f, routeColor, 0.55)); addPin(f.to, f.toAp, f.arrDate); }
           i++; setTimeout(step, 150);
         }
       };
@@ -171,7 +212,7 @@ function buildMap() {
     };
     const finish = () => {
       playing = false; $('#replay').hidden = false; $('#replay-stop').hidden = true;
-      status.textContent = `${FLIGHTS.length} flights · ${fmtInt(STATS.totalKm)} km`;
+      status.textContent = `${FLIGHTS.length} flights · ${fmtInt(STATS.totalKm)} km${DRIVES.length ? ` · ${DRIVES.length} drive${DRIVES.length === 1 ? '' : 's'} · ${fmtInt(STATS.road.km)} km by road` : ''}`;
       drawAll(); fitAll();
     };
     $('#replay-stop').onclick = () => { playing = false; cancelAnimationFrame(raf); finish(); };
@@ -190,7 +231,7 @@ function renderStats() {
     tile('Kilometres zoomed', fmtInt(s.totalKm), 'km', '', '📏'),
     tile('Time in the clouds', fmtDur(s.totalMin), '', '', '☁️'),
     tile('Countries explored', s.countries.length, '', '', '🌍'),
-    tile('Places visited', s.cities.length, '', s.cities.some(c => c.stop) ? 'cities and stops along the way' : '', '🏙️'),
+    tile('Places visited', s.cities.length, '', s.cities.some(c => c.stop || c.road) ? 'cities and stops along the way' : '', '🏙️'),
     tile('Airports', s.airports.length, '', '', '🛫'),
     tile('Airlines', s.airlines.length, '', '', '🎫'),
     tile('Kinds of plane', s.aircraft.length, '', '', '🛩️'),
@@ -282,6 +323,40 @@ function renderLogbook() {
     <tfoot><tr class="total"><td></td><td colspan="5">All together · ${FLIGHTS.length} flight${FLIGHTS.length === 1 ? '' : 's'}</td><td class="num">${fmtInt(STATS.totalKm)}</td><td class="num">${fmtDur(STATS.totalMin)}</td><td colspan="2"></td></tr></tfoot>`;
 }
 
+// --- on the road ------------------------------------------------------------
+function renderRoadbook() {
+  const sec = $('#roadbook'); if (!sec) return;
+  sec.hidden = !DRIVES.length;
+  if (!DRIVES.length) return;
+  const rows = DRIVES.map(d => `<tr>
+    <td class="seq">${d.seq}</td>
+    <td class="date">${fmtDate(d.date)}</td>
+    <td class="route"><b>${esc(d.fromPl.name)} → ${esc(d.toPl.name)}</b><span class="dim">${d.viaPl.length ? 'via ' + d.viaPl.map(p => esc(p.name)).join(', ') : esc(d.toPl.country)}</span></td>
+    <td data-label="Adventure" class="${d.trip ? '' : 'none'}">${esc(d.trip || '')}</td>
+    <td data-label="Wheels" class="${d.vehicle ? '' : 'none'}">${esc(d.vehicle || '')}</td>
+    <td class="num" data-label="km">${fmtInt(d.km)}${d.kmEstimated ? '<span class="tag" title="Estimated from the map">est</span>' : ''}</td>
+    <td class="num" data-label="How long">${fmtDur(d.durationMin)}${d.durationEstimated ? '<span class="tag" title="Estimated from distance">est</span>' : ''}</td>
+    <td data-label="How old">${d.age ? formatAge(d.age, true) : ''}</td>
+    <td data-label="Notes" class="${d.notes ? '' : 'none'}">${esc(d.notes || '')}</td>
+  </tr>`).join('');
+  $('#roadbook-table').innerHTML = `<thead><tr><th>#</th><th>When</th><th>Where</th><th>Adventure</th><th>Wheels</th><th class="num">km</th><th class="num">How long</th><th>How old</th><th>Notes</th></tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot><tr class="total"><td></td><td colspan="4">All together · ${DRIVES.length} drive${DRIVES.length === 1 ? '' : 's'}</td><td class="num">${fmtInt(STATS.road.km)}</td><td class="num">${fmtDur(STATS.road.minutes)}</td><td colspan="2"></td></tr></tfoot>`;
+}
+function renderRoadStats() {
+  const sec = $('#roadstats-wrap'); if (!sec) return;
+  const r = STATS.road;
+  sec.hidden = !r.drives;
+  if (!r.drives) return;
+  $('#roadstats').innerHTML = [
+    tile('Drives', r.drives, '', '', '🚗'),
+    tile('Kilometres by road', fmtInt(r.km), 'km', `${fmt1(r.km / (r.km + STATS.totalKm || 1) * 100)}% of all his travels`, '🛣️'),
+    tile('Time in the car seat', fmtDur(r.minutes), '', '', '🧃'),
+    tile('Longest drive', fmtInt(r.longest.km), 'km', `${esc(r.longest.fromPl.name)} → ${esc(r.longest.toPl.name)}, ${fmtDur(r.longest.durationMin)}`, '🥱'),
+    tile('First road trip', fmtDate(r.first.date), '', `${esc(r.first.fromPl.name)} → ${esc(r.first.toPl.name)}${r.first.age ? ', aged ' + formatAge(r.first.age, true) : ''}`, '🎉'),
+  ].join('');
+}
+
 // --- passport ---------------------------------------------------------------
 function renderPassport() {
   const hash = s => [...s].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7);
@@ -317,7 +392,7 @@ function renderTrips() {
     const age = DATA.birthdate ? ageAt(DATA.birthdate, t.start) : null;
     const dates = t.start === t.end ? fmtDateLong(t.start) : `${fmtDate(t.start)} – ${fmtDate(t.end)}`;
     const em = t.meta.emoji || ems[[...t.name].reduce((h, ch) => h + ch.charCodeAt(0), 0) % ems.length];
-    const placeList = t.stops.length ? t.stops.map(st => st.name) : t.places.filter(p => p !== t.flights[0].fromAp.c);
+    const placeList = t.stops.length ? t.stops.map(st => st.name) : t.places.filter(p => p !== t.origin);
     const nPhotos = normPhotos(t.meta.photos).length + t.stops.reduce((n, st) => n + normPhotos(st.photos).length, 0);
     const stops = t.stops.map((st, si) => {
       const sd = st.from && st.to ? (st.from === st.to ? fmtDateLong(st.from) : `${fmtDate(st.from)} – ${fmtDate(st.to)}`) : (st.from ? fmtDateLong(st.from) : '');
@@ -334,10 +409,16 @@ function renderTrips() {
       <h3>${esc(t.name)}</h3>
       <div class="dates">${dates} · ${esc(placeList.join(' → ') || t.places.join(', '))}</div>
       ${age ? `<div class="age">${DATA.name} was ${formatAge(age)} old</div>` : ''}
-      <div class="summary"><b>${fmtInt(t.km)} km</b>${t.flights.length} flight${t.flights.length === 1 ? '' : 's'} · ${fmtDur(t.minutes)}${nPhotos ? ` · ${nPhotos} photos` : ''}</div>
+      <div class="summary"><b>${fmtInt(t.km + t.roadKm)} km</b>${[
+        t.flights.length ? `${t.flights.length} flight${t.flights.length === 1 ? '' : 's'} · ${fmtDur(t.minutes)}` : '',
+        t.drives.length ? `${t.drives.length} drive${t.drives.length === 1 ? '' : 's'} · ${t.flights.length ? fmtInt(t.roadKm) + ' km · ' : ''}${fmtDur(t.roadMin)}` : '',
+        nPhotos ? `${nPhotos} photos` : '',
+      ].filter(Boolean).join(' · ')}</div>
       ${t.meta.notes ? `<p class="notes">${esc(t.meta.notes)}</p>` : ''}
       ${crewRow(t.meta.with)}
-      <div class="legs">${t.flights.map(f => `<span class="leg"><b>${esc(f.from)}→${esc(f.to)}</b> ${fmtDate(f.date)}${f.flight ? ' · ' + esc(f.flight) : ''}</span>`).join('')}</div>
+      <div class="legs">${t.legs.map(f => f.kind === 'drive'
+        ? `<span class="leg road"><b>🚗 ${esc(f.fromPl.name)}→${esc(f.toPl.name)}</b> ${fmtDate(f.date)} · ${fmtInt(f.km)} km</span>`
+        : `<span class="leg"><b>${esc(f.from)}→${esc(f.to)}</b> ${fmtDate(f.date)}${f.flight ? ' · ' + esc(f.flight) : ''}</span>`).join('')}</div>
       ${photoStrip(t.meta.photos, t.name, -1)}
       ${stops ? `<div class="stops">${stops}</div>` : ''}
     </article>`;
