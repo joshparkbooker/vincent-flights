@@ -230,6 +230,78 @@
           "with": [
             "Mum",
             "Dad"
+          ],
+          "photos": [
+            {
+              "src": "photos/around-the-world/tokyo/img-6476-2884ad8e.jpg",
+              "thumb": "photos/around-the-world/tokyo/img-6476-2884ad8e-thumb.jpg",
+              "date": "2026-09-04"
+            },
+            {
+              "src": "photos/around-the-world/tokyo/img-6481-d7e2569c.jpg",
+              "thumb": "photos/around-the-world/tokyo/img-6481-d7e2569c-thumb.jpg",
+              "date": "2026-09-04"
+            },
+            {
+              "src": "photos/around-the-world/tokyo/img-6483-56fac886.jpg",
+              "thumb": "photos/around-the-world/tokyo/img-6483-56fac886-thumb.jpg",
+              "date": "2026-09-04"
+            },
+            {
+              "src": "photos/around-the-world/tokyo/img-4182-bb12a543.jpg",
+              "thumb": "photos/around-the-world/tokyo/img-4182-bb12a543-thumb.jpg",
+              "date": "2026-09-05"
+            },
+            {
+              "src": "photos/around-the-world/tokyo/img-6493-b68cc85b.jpg",
+              "thumb": "photos/around-the-world/tokyo/img-6493-b68cc85b-thumb.jpg",
+              "date": "2026-09-05"
+            },
+            {
+              "src": "photos/around-the-world/tokyo/img-6498-2431cf87.jpg",
+              "thumb": "photos/around-the-world/tokyo/img-6498-2431cf87-thumb.jpg",
+              "date": "2026-09-05"
+            },
+            {
+              "src": "photos/around-the-world/tokyo/img-6502-3c697238.jpg",
+              "thumb": "photos/around-the-world/tokyo/img-6502-3c697238-thumb.jpg",
+              "date": "2026-09-05"
+            },
+            {
+              "src": "photos/around-the-world/tokyo/img-6508-10afd929.jpg",
+              "thumb": "photos/around-the-world/tokyo/img-6508-10afd929-thumb.jpg",
+              "date": "2026-09-05"
+            },
+            {
+              "src": "photos/around-the-world/tokyo/img-6511-9c3fe2e2.jpg",
+              "thumb": "photos/around-the-world/tokyo/img-6511-9c3fe2e2-thumb.jpg",
+              "date": "2026-09-05"
+            },
+            {
+              "src": "photos/around-the-world/tokyo/img-6527-86e60541.jpg",
+              "thumb": "photos/around-the-world/tokyo/img-6527-86e60541-thumb.jpg",
+              "date": "2026-09-06"
+            },
+            {
+              "src": "photos/around-the-world/tokyo/img-6540-2eca1f18.jpg",
+              "thumb": "photos/around-the-world/tokyo/img-6540-2eca1f18-thumb.jpg",
+              "date": "2026-09-07"
+            },
+            {
+              "src": "photos/around-the-world/tokyo/img-6554-b6c031b0.jpg",
+              "thumb": "photos/around-the-world/tokyo/img-6554-b6c031b0-thumb.jpg",
+              "date": "2026-09-07"
+            },
+            {
+              "src": "photos/around-the-world/tokyo/img-6563-7b04b3e8.jpg",
+              "thumb": "photos/around-the-world/tokyo/img-6563-7b04b3e8-thumb.jpg",
+              "date": "2026-09-07"
+            },
+            {
+              "src": "photos/around-the-world/tokyo/img-6571-7f354252.jpg",
+              "thumb": "photos/around-the-world/tokyo/img-6571-7f354252-thumb.jpg",
+              "date": "2026-09-07"
+            }
           ]
         },
         {
