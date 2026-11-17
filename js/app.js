@@ -188,7 +188,7 @@ function renderStats() {
   if (s.life) {
     const l = s.life;
     $('#agestats').innerHTML = [
-      tile('Age at first flight', formatAge(l.ageAtFirstFlight), '', `${l.daysOldAtFirstFlight} days old`),
+      tile('Age at first flight', l.ageAtFirstFlight ? formatAge(l.ageAtFirstFlight) : '—', '', l.ageAtFirstFlight ? `${l.daysOldAtFirstFlight} days old` : 'No flights yet'),
       tile('Of his life spent airborne', l.pctAirborne < 0.1 ? l.pctAirborne.toFixed(3) : fmt1(l.pctAirborne), '%'),
       tile('Km per month of life', fmtInt(l.kmPerMonth), 'km'),
       tile('Flights per month of life', fmt1(l.flightsPerMonth)),
