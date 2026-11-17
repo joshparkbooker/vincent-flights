@@ -3,5 +3,16 @@
   "birthdate": "2025-10-31",
   "home": "MEL",
   "trips": {},
-  "flights": []
+  "flights": [
+    {
+      "date": "2026-03-13",
+      "flight": "QF920",
+      "from": "MEL",
+      "to": "MCY",
+      "airline": "Qantas",
+      "aircraft": "Boeing 737-800",
+      "duration_min": 140,
+      "trip": "First trip to Noosa"
+    }
+  ]
 }
