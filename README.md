@@ -75,15 +75,16 @@ Attach photos to a stop with `--stop`:
 python3 scripts/add_photos.py "Japan" --stop "Kyoto" inbox/
 ```
 
-Photos taken on the way (on the plane, at the airport, in the car) go in with `--transit`:
+Photos taken on the way (on the plane, at the airport, in the car) go in with `--transit` for the journey there or `--home` for the journey home:
 
 ```
-python3 scripts/add_photos.py "Japan" --transit inbox/
+python3 scripts/add_photos.py "Japan" --stop "Kyoto" --transit inbox/
+python3 scripts/add_photos.py "Japan" --stop "Kyoto" --home inbox/
 ```
 
-A trip or stop with any of these splits its photos into "In transit" and "At the destination". Running the same command on a photo that is already added moves it to "In transit".
+A trip or stop with any of these splits its photos into the journey there, "At the destination" and the journey home. The journey headings name the legs, e.g. "Tokyo to Mexico City": for a stop, the legs that left after the previous stop ended; for a trip without stops, the first half of its legs out and the second half back. On a trip with stops, put the journey home on the last stop. Running the same command on a photo that is already added moves it.
 
-Photos can also be hand-edited in the JSON as `{"src": "...", "thumb": "...", "caption": "...", "date": "YYYY-MM-DD", "transit": true}` or a plain URL string.
+Photos can also be hand-edited in the JSON as `{"src": "...", "thumb": "...", "caption": "...", "date": "YYYY-MM-DD", "transit": true}` (or `"transit": "home"`) or a plain URL string.
 
 ## Road trips
 

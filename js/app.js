@@ -580,17 +580,30 @@ function crewRow(list, label = 'With') {
   return `<div class="crew"><span class="crew-label">${label}</span>${people.map(p => chip(p, `<i style="background:${avatarColor(p.name)}">${p.buddy ? '✨' : esc(initials(p.name))}</i>${esc(p.name)}${p.buddy ? '<em>best mate</em>' : ''}`)).join('')}</div>`;
 }
 const normPhotos = list => (list || []).map(p => typeof p === 'string' ? { src: p, thumb: p } : p);
-// pics from the journey itself ("transit": true) lead, pics from the place follow; the lightbox walks them in the same order
-const orderPhotos = list => { const pl = normPhotos(list); return [...pl.filter(p => p.transit), ...pl.filter(p => !p.transit)]; };
+// pics from the journey there ("transit": true) lead, pics from the place follow, pics from the journey home ("transit": "home") close; the lightbox walks them in the same order
+const orderPhotos = list => { const pl = normPhotos(list); return [...pl.filter(p => p.transit && p.transit !== 'home'), ...pl.filter(p => !p.transit), ...pl.filter(p => p.transit === 'home')]; };
+// which legs carried him to a stop (or, for a trip without stops, out to the place), and which carried him home
+function transitLegs(t, stopIdx) {
+  const dated = t.stops.filter(st => st.to);
+  if (stopIdx < 0 || !dated.length) { const half = Math.ceil(t.legs.length / 2); return { there: t.legs.slice(0, half), home: t.legs.slice(half) }; }
+  const stopOf = l => t.stops.findIndex(st => st.to && l.date < st.to);
+  return { there: t.legs.filter(l => stopOf(l) === stopIdx), home: stopIdx === t.stops.length - 1 ? t.legs.filter(l => stopOf(l) < 0) : [] };
+}
+function transitLabel(legs) {
+  if (!legs.length) return '✈️ In transit';
+  const a = legs[0], b = legs[legs.length - 1];
+  return `${legs.some(l => l.kind !== 'drive') ? '✈️' : '🚗'} ${esc(a.kind === 'drive' ? a.fromPl.name : a.fromAp.c)} to ${esc(b.kind === 'drive' ? b.toPl.name : b.toAp.c)}`;
+}
 function photoStrip(list, tripName, stopIdx) {
   const plist = orderPhotos(list);
   if (!plist.length) return '';
-  const nTransit = plist.filter(p => p.transit).length;
+  const nThere = plist.filter(p => p.transit && p.transit !== 'home').length, nHome = plist.filter(p => p.transit === 'home').length;
   const strip = (from, to) => `<div class="photos">${plist.slice(from, to).map((p, k) => `<button class="photo" data-trip="${esc(tripName)}" data-stop="${stopIdx}" data-i="${from + k}" title="${esc(p.caption || '')}"><img src="${esc(p.thumb || p.src)}" alt="${esc(p.caption || '')}" loading="lazy"></button>`).join('')}<span class="photo-count">📸 ${plural(to - from, 'photo')}</span></div>`;
-  if (!nTransit) return strip(0, plist.length);
-  const flew = TRIPS.find(x => x.name === tripName)?.flights.length;
+  if (!nThere && !nHome) return strip(0, plist.length);
+  const t = TRIPS.find(x => x.name === tripName);
+  const legs = t ? transitLegs(t, stopIdx) : { there: [], home: [] };
   const group = (label, from, to) => to > from ? `<div class="photo-group"><h5 class="photo-label">${label}</h5>${strip(from, to)}</div>` : '';
-  return group(`${flew ? '✈️' : '🚗'} In transit`, 0, nTransit) + group('📍 At the destination', nTransit, plist.length);
+  return group(transitLabel(legs.there), 0, nThere) + group('📍 At the destination', nThere, plist.length - nHome) + group(transitLabel(legs.home), plist.length - nHome, plist.length);
 }
 function renderTrips() {
   const ems = ['🏖️', '🎢', '🏔️', '🦘', '🐠', '🎈', '🚂', '🍦'];

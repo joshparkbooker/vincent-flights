@@ -269,7 +269,7 @@
           "src": "photos/bali-trip/img-5907-56231c86.jpg",
           "thumb": "photos/bali-trip/img-5907-56231c86-thumb.jpg",
           "date": "2026-05-28",
-          "transit": true
+          "transit": "home"
         }
       ]
     },
@@ -658,7 +658,7 @@
               "thumb": "photos/around-the-world/new-york/img-4983-e71b8fd5-thumb.jpg",
               "date": "2026-09-28",
               "caption": "New York to Auckland",
-              "transit": true
+              "transit": "home"
             },
             {
               "src": "photos/around-the-world/new-york/img-6966-b7dd8cfa.jpg",
