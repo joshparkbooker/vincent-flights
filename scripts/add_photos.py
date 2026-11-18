@@ -6,9 +6,13 @@ Usage:
   python3 scripts/add_photos.py "First trip to Noosa" --caption "Beach day" photo1.jpg
   python3 scripts/add_photos.py "First trip to Noosa" inbox/        # every image in a folder
   python3 scripts/add_photos.py "Japan" --stop "Kyoto" inbox/       # attach to a stop inside the trip
+  python3 scripts/add_photos.py "Japan" --transit plane1.heic       # taken on the way (plane, airport, car)
 
 Each photo is resized (max 1600px, JPEG) into photos/<trip-slug>/ with a 480px
 thumbnail, and appended to trips["<name>"].photos in data/flights.json.
+Photos added with --transit show under "In transit"; the rest show under
+"At the destination". Re-running with --transit on a photo that is already
+there moves it to "In transit".
 Uses macOS `sips`, so it also handles HEIC from an iPhone. No other dependencies.
 """
 import json, os, re, subprocess, sys, hashlib, shutil
@@ -40,12 +44,15 @@ def main(argv):
     trip = argv[0]
     caption = None
     stop = None
+    transit = False
     files = []
     args = argv[1:]
     while args:
         a = args.pop(0)
         if a == '--caption':
             caption = args.pop(0)
+        elif a == '--transit':
+            transit = True
         elif a == '--stop':
             stop = args.pop(0)
         elif os.path.isdir(a):
@@ -73,7 +80,8 @@ def main(argv):
     else:
         photos = entry.setdefault('photos', [])
         folder = os.path.join(ROOT, 'photos', slug(trip))
-    existing = {p['src'] if isinstance(p, dict) else p for p in photos}
+    existing = {p['src']: p for p in photos if isinstance(p, dict)}
+    existing.update({p: None for p in photos if not isinstance(p, dict)})
 
     os.makedirs(folder, exist_ok=True)
     added = 0
@@ -86,13 +94,19 @@ def main(argv):
         thumb = os.path.join(folder, base + '-thumb.jpg')
         rel_full = os.path.relpath(full, ROOT)
         if rel_full in existing:
-            print(f'already added: {src}'); continue
+            old = existing[rel_full]
+            if transit and old is not None and not old.get('transit'):
+                old['transit'] = True; print(f'moved to In transit: {src}')
+            else:
+                print(f'already added: {src}')
+            continue
         sips(src, full, 1600)
         sips(src, thumb, 480)
         p = {'src': rel_full, 'thumb': os.path.relpath(thumb, ROOT)}
         d = taken_date(src)
         if d: p['date'] = d
         if caption: p['caption'] = caption
+        if transit: p['transit'] = True
         photos.append(p); added += 1
         print(f'added {rel_full} ({os.path.getsize(full)//1024} KB)')
     photos.sort(key=lambda p: (p.get('date') or '9999', p['src']) if isinstance(p, dict) else ('9999', p))

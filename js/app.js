@@ -580,10 +580,17 @@ function crewRow(list, label = 'With') {
   return `<div class="crew"><span class="crew-label">${label}</span>${people.map(p => chip(p, `<i style="background:${avatarColor(p.name)}">${p.buddy ? '✨' : esc(initials(p.name))}</i>${esc(p.name)}${p.buddy ? '<em>best mate</em>' : ''}`)).join('')}</div>`;
 }
 const normPhotos = list => (list || []).map(p => typeof p === 'string' ? { src: p, thumb: p } : p);
+// pics from the journey itself ("transit": true) lead, pics from the place follow; the lightbox walks them in the same order
+const orderPhotos = list => { const pl = normPhotos(list); return [...pl.filter(p => p.transit), ...pl.filter(p => !p.transit)]; };
 function photoStrip(list, tripName, stopIdx) {
-  const plist = normPhotos(list);
+  const plist = orderPhotos(list);
   if (!plist.length) return '';
-  return `<div class="photos">${plist.map((p, i) => `<button class="photo" data-trip="${esc(tripName)}" data-stop="${stopIdx}" data-i="${i}" title="${esc(p.caption || '')}"><img src="${esc(p.thumb || p.src)}" alt="${esc(p.caption || '')}" loading="lazy"></button>`).join('')}<span class="photo-count">📸 ${plist.length} photo${plist.length === 1 ? '' : 's'}</span></div>`;
+  const nTransit = plist.filter(p => p.transit).length;
+  const strip = (from, to) => `<div class="photos">${plist.slice(from, to).map((p, k) => `<button class="photo" data-trip="${esc(tripName)}" data-stop="${stopIdx}" data-i="${from + k}" title="${esc(p.caption || '')}"><img src="${esc(p.thumb || p.src)}" alt="${esc(p.caption || '')}" loading="lazy"></button>`).join('')}<span class="photo-count">📸 ${plural(to - from, 'photo')}</span></div>`;
+  if (!nTransit) return strip(0, plist.length);
+  const flew = TRIPS.find(x => x.name === tripName)?.flights.length;
+  const group = (label, from, to) => to > from ? `<div class="photo-group"><h5 class="photo-label">${label}</h5>${strip(from, to)}</div>` : '';
+  return group(`${flew ? '✈️' : '🚗'} In transit`, 0, nTransit) + group('📍 At the destination', nTransit, plist.length);
 }
 function renderTrips() {
   const ems = ['🏖️', '🎢', '🏔️', '🦘', '🐠', '🎈', '🚂', '🍦'];
@@ -630,7 +637,7 @@ function photoClick(e) {
   const si = +b.dataset.stop;
   const list = si >= 0 ? t.stops[si].photos : t.meta.photos;
   const title = si >= 0 ? `${t.name} · ${t.stops[si].name}` : t.name;
-  openLightbox(normPhotos(list), title, +b.dataset.i);
+  openLightbox(orderPhotos(list), title, +b.dataset.i);
 }
 
 // --- lightbox ---------------------------------------------------------------

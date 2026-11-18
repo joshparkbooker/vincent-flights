@@ -258,6 +258,10 @@ table.logbook .small { color: var(--text-secondary); font-size: .78rem; display:
 .trip .photo:hover { transform: rotate(0) scale(1.06); z-index: 1; }
 .trip .photo img { display: block; height: 130px; width: 130px; border-radius: 14px; object-fit: cover; border: 5px solid #fff; box-shadow: var(--shadow); background: var(--surface-2); }
 .trip .photo-count { font-size: .8rem; color: var(--text-muted); font-weight: 800; margin-left: .3rem; }
+.photo-group { grid-column: 1 / -1; min-width: 0; margin-top: var(--gap-block); }
+.photo-label { margin: 0; font-size: .75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: .08em; }
+.trip .photo-group .photos { margin-top: .4rem; }
+.stop .photo-group { margin-top: .65rem; }
 
 /* lightbox */
 .lightbox { position: fixed; inset: 0; z-index: 2000; background: rgba(15, 26, 58, .88); display: flex; align-items: center; justify-content: center; padding: 1rem; }

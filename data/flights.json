@@ -62,17 +62,20 @@
         {
           "src": "photos/first-trip-to-noosa/img-5201-f62bc901.jpg",
           "thumb": "photos/first-trip-to-noosa/img-5201-f62bc901-thumb.jpg",
-          "date": "2026-03-13"
+          "date": "2026-03-13",
+          "transit": true
         },
         {
           "src": "photos/first-trip-to-noosa/img-5202-745eeb64.jpg",
           "thumb": "photos/first-trip-to-noosa/img-5202-745eeb64-thumb.jpg",
-          "date": "2026-03-13"
+          "date": "2026-03-13",
+          "transit": true
         },
         {
           "src": "photos/first-trip-to-noosa/img-5204-096e2be9.jpg",
           "thumb": "photos/first-trip-to-noosa/img-5204-096e2be9-thumb.jpg",
-          "date": "2026-03-13"
+          "date": "2026-03-13",
+          "transit": true
         },
         {
           "src": "photos/first-trip-to-noosa/img-0808-934b2f75.jpg",
@@ -143,12 +146,14 @@
         {
           "src": "photos/bali-trip/img-5619-81288337.jpg",
           "thumb": "photos/bali-trip/img-5619-81288337-thumb.jpg",
-          "date": "2026-05-11"
+          "date": "2026-05-11",
+          "transit": true
         },
         {
           "src": "photos/bali-trip/img-5620-7866afbd.jpg",
           "thumb": "photos/bali-trip/img-5620-7866afbd-thumb.jpg",
-          "date": "2026-05-11"
+          "date": "2026-05-11",
+          "transit": true
         },
         {
           "src": "photos/bali-trip/img-5630-b889e1b4.jpg",
@@ -263,7 +268,8 @@
         {
           "src": "photos/bali-trip/img-5907-56231c86.jpg",
           "thumb": "photos/bali-trip/img-5907-56231c86-thumb.jpg",
-          "date": "2026-05-28"
+          "date": "2026-05-28",
+          "transit": true
         }
       ]
     },
@@ -284,17 +290,20 @@
             {
               "src": "photos/around-the-world/tokyo/img-6476-2884ad8e.jpg",
               "thumb": "photos/around-the-world/tokyo/img-6476-2884ad8e-thumb.jpg",
-              "date": "2026-09-04"
+              "date": "2026-09-04",
+              "transit": true
             },
             {
               "src": "photos/around-the-world/tokyo/img-6481-d7e2569c.jpg",
               "thumb": "photos/around-the-world/tokyo/img-6481-d7e2569c-thumb.jpg",
-              "date": "2026-09-04"
+              "date": "2026-09-04",
+              "transit": true
             },
             {
               "src": "photos/around-the-world/tokyo/img-6483-56fac886.jpg",
               "thumb": "photos/around-the-world/tokyo/img-6483-56fac886-thumb.jpg",
-              "date": "2026-09-04"
+              "date": "2026-09-04",
+              "transit": true
             },
             {
               "src": "photos/around-the-world/tokyo/img-4182-bb12a543.jpg",
@@ -369,7 +378,9 @@
             {
               "src": "photos/around-the-world/mexico-city/img-6584-49b40fc7.jpg",
               "thumb": "photos/around-the-world/mexico-city/img-6584-49b40fc7-thumb.jpg",
-              "date": "2026-09-08"
+              "date": "2026-09-08",
+              "transit": true,
+              "caption": "Tokyo to Mexico City"
             },
             {
               "src": "photos/around-the-world/mexico-city/img-6591-48a32396.jpg",
