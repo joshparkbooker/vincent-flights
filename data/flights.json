@@ -306,6 +306,13 @@
               "transit": true
             },
             {
+              "src": "photos/around-the-world/tokyo/img-4130-6270ae4c.jpg",
+              "thumb": "photos/around-the-world/tokyo/img-4130-6270ae4c-thumb.jpg",
+              "date": "2026-09-05",
+              "caption": "Train from the airport into Tokyo",
+              "transit": true
+            },
+            {
               "src": "photos/around-the-world/tokyo/img-4182-bb12a543.jpg",
               "thumb": "photos/around-the-world/tokyo/img-4182-bb12a543-thumb.jpg",
               "date": "2026-09-05"
@@ -375,6 +382,20 @@
             "Ollie"
           ],
           "photos": [
+            {
+              "src": "photos/around-the-world/mexico-city/img-4317-849d25f1.jpg",
+              "thumb": "photos/around-the-world/mexico-city/img-4317-849d25f1-thumb.jpg",
+              "date": "2026-09-08",
+              "caption": "Tokyo to Mexico City",
+              "transit": true
+            },
+            {
+              "src": "photos/around-the-world/mexico-city/img-4322-4b7cfa5a.jpg",
+              "thumb": "photos/around-the-world/mexico-city/img-4322-4b7cfa5a-thumb.jpg",
+              "date": "2026-09-08",
+              "caption": "Tokyo to Mexico City",
+              "transit": true
+            },
             {
               "src": "photos/around-the-world/mexico-city/img-6584-49b40fc7.jpg",
               "thumb": "photos/around-the-world/mexico-city/img-6584-49b40fc7-thumb.jpg",
@@ -471,6 +492,13 @@
             "Uncle Charles"
           ],
           "photos": [
+            {
+              "src": "photos/around-the-world/boulder/img-4582-1d118fe5.jpg",
+              "thumb": "photos/around-the-world/boulder/img-4582-1d118fe5-thumb.jpg",
+              "date": "2026-09-15",
+              "caption": "Mexico City to Denver",
+              "transit": true
+            },
             {
               "src": "photos/around-the-world/boulder/img-6721-316b2768.jpg",
               "thumb": "photos/around-the-world/boulder/img-6721-316b2768-thumb.jpg",
@@ -624,6 +652,13 @@
               "src": "photos/around-the-world/new-york/img-6165-6e91ee94.jpg",
               "thumb": "photos/around-the-world/new-york/img-6165-6e91ee94-thumb.jpg",
               "date": "2026-09-25"
+            },
+            {
+              "src": "photos/around-the-world/new-york/img-4983-e71b8fd5.jpg",
+              "thumb": "photos/around-the-world/new-york/img-4983-e71b8fd5-thumb.jpg",
+              "date": "2026-09-28",
+              "caption": "New York to Auckland",
+              "transit": true
             },
             {
               "src": "photos/around-the-world/new-york/img-6966-b7dd8cfa.jpg",
